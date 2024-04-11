@@ -1,0 +1,9 @@
+# API
+
+
+```@index
+```
+
+```@docs
+meaningoflife
+```
