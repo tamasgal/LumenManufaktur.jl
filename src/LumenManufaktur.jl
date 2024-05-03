@@ -20,28 +20,6 @@ struct PMTModel{T1, T2}
     angular_acceptance::T2
 end
 
-# abstract type PMTModel end
-# function quantumefficiency end
-# photocathodearea(::Type{KM3NeTPMT}) = 45.4e-4
-# quantumefficiency(::Type{KM3NeTPMT}) = LinearInterpolator(
-#         [0, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335,
-#         340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400, 405, 410,
-#         415, 420, 425, 430, 435, 440, 445, 450, 455, 460, 465, 470, 475, 480, 485,
-#         490, 495, 500, 505, 510, 515, 520, 525, 530, 535, 540, 545, 550, 555, 560,
-#         565, 570, 575, 580, 585, 590, 595, 600, 605, 610, 615, 620, 625, 630, 635,
-#         640, 645, 650, 655, 660, 665, 670, 675, 680, 685, 690, 695, 700, 705, 710,
-#         999999],
-#         # collection efficiency (with factor 0.9) correction
-#         0.01 * 0.9 * [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.9, 1.8, 4.6, 7.4,
-#         11., 15., 18., 21., 22., 23., 24., 25., 25., 26., 26., 26., 26., 27., 26.,
-#         26., 26., 26., 26., 25., 25., 25., 25., 24., 24., 24., 23., 22., 22., 21.,
-#         20., 19., 19., 19., 18., 18., 18., 17., 16., 15., 14., 12., 11., 10., 9.5,
-#         8.7, 8.1, 7.6, 7.2, 6.8, 6.4, 6.0, 5.6, 5.1, 4.8, 4.4, 4.0, 3.6, 3.3, 3.0,
-#         2.7, 2.3, 2.1, 1.9, 1.7, 1.5, 1.4, 1.2, 1.0, 0.9, 0.7, 0.6, 0.5, 0.4, 0.3,
-#         0.2, 0.1, 0.0, 0.0],
-#         NoBoundaries()
-# )
-#
 const α = 1.0/137.036  # Fine-structure constant
 
 const PMTKM3NeT = PMTModel(
@@ -208,57 +186,25 @@ function directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
 
     R  =  max(R, params.minimum_distance)
     A  =  pmt.photocathode_area
-
     px =  sin(θ)*cos(ϕ)
     pz =  cos(θ)
 
-    # @show px
-    # @show pz
-    # @show wmin
-    # @show wmax
-
-    # for (m_x, m_y) in [(cos(x), sin(x)) for x in 0.5dx:dx:π]
     for (m_x, m_y) in zip(params.legendre_coefficients...)
-    # gl = gausslegendre(5)
-    # m_x = gl[1][1]
-    # m_y = gl[2][1]
-
-      # println("-----------")
-      # @show m_x
-      # @show m_y
-
       w  = 0.5 * (params.lambda_max + params.lambda_min)  +  m_x * 0.5 * (params.lambda_max - params.lambda_min)
-      # @show w
-
       dw = m_y * 0.5 * (params.lambda_max - params.lambda_min)
-      # @show dw
-
       n     = refractionindexphase(w, params.dispersion_model)
-      # @show n
-
       l_abs = absorptionlength(params.absorption_model, w);  # 59 allocs, 500ns
-      # @show l_abs
       ls    = scatteringlength(params.scattering_model, w);  # 0 allocs, 180ns
-      # @show ls
-
-      # @show cherenkov(w,n)
-      # @show PMTKM3NeT.quantum_efficiency(w)
       npe   = cherenkov(w,n) * dw * pmt.quantum_efficiency(w);
-      # @show npe
-
       ct0 = 1.0 / n;
       st0 = sqrt((1.0 + ct0)*(1.0 - ct0));
-
       d  = R / st0;                                 # distance traveled by photon
       ct = st0*px + ct0*pz;                         # cosine angle of incidence on PMT
-
       U  = pmt.angular_acceptance(ct);                # PMT angular acceptance
       V  = exp(-d/l_abs) * exp(-d/ls);              # absorption & scattering
       W  = A / (2.0*π*R*st0);                      # solid angle
-
       value += npe * U * V * W;
     end
-
     value
 end
 
