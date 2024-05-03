@@ -34,3 +34,27 @@ After that, you can add `MuonLight.jl` just like any other Julia package:
 ``` julia-repl
 julia> using MuonLight
 ```
+
+## Benchmarks
+
+Here are some benchmarks made on a MacBook Air M1 2020:
+
+``` julia-repl
+julia> using MuonLight
+
+julia> dp = MuonLight.DispersionARCA
+BasicDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
+
+julia> @benchmark MuonLight.directlight($dp, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
+BenchmarkTools.Trial: 10000 samples with 11 evaluations.
+ Range (min … max):  1.004 μs …  37.780 μs  ┊ GC (min … max): 0.00% … 92.37%
+ Time  (median):     1.042 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   1.062 μs ± 521.187 ns  ┊ GC (mean ± σ):  0.66% ±  1.30%
+
+         ▄██▇ ▄▁                                               
+  ▂▂▂▃▅▁█████▁███▆▆▁▆▇▆▅▅▁▄▃▃▃▃▁▄▄▄▃▃▁▃▃▂▂▂▁▂▂▂▂▂▁▂▂▂▂▂▁▂▂▂▂▂ ▃
+  1 μs            Histogram: frequency by time        1.19 μs <
+
+ Memory estimate: 1.12 KiB, allocs estimate: 62.
+
+```
