@@ -37,7 +37,7 @@ julia> using MuonLight
 
 ## Benchmarks
 
-Here are some benchmarks made on a MacBook Air M1 2020:
+Below are some benchmarks made on a MacBook Air M1 2020.
 
 ``` julia-repl
 julia> using MuonLight
@@ -62,4 +62,31 @@ BenchmarkTools.Trial: 10000 samples with 198 evaluations.
   434 ns          Histogram: frequency by time          532 ns <
 
  Memory estimate: 160 bytes, allocs estimate: 5.
+```
+
+Notice that the allocation estimate for a single call is not accurate, in fact,
+the calculation itself is non-allocating. The example below where demonstrates
+that calling the function 1000 times with random values in a tight for-loop only
+requires 2 allocations in total and has a memory estimate of 192 bytes:
+
+``` julia-repl
+julia> function manycalls()
+           params = MuonLight.Parameters(dispersion_model=MuonLight.DispersionARCA)
+           for i in 1:1000
+               MuonLight.directlight(params, MuonLight.PMTKM3NeT, rand()*300+1, rand()*2π, rand()*2π)
+           end
+       end
+manycalls (generic function with 1 method)
+
+julia> @benchmark manycalls()
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  387.208 μs … 651.334 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     387.875 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   391.571 μs ±  11.914 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▆▂▂▄▆  ▂▁            ▂▁  ▁                                   ▁
+  ███████████▇▇█▇█▇▇▇▆▇▇██████▇█▇▇▆▆▆▅▆▅▅▅▆▆▆▆▅▇▇▆▆▆▅▆▅▅▃▅▅▄▃▃▄ █
+  387 μs        Histogram: log(frequency) by time        425 μs <
+
+ Memory estimate: 192 bytes, allocs estimate: 2.
 ```
