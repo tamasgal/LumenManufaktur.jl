@@ -10,6 +10,11 @@ export DispersionARCA
 
 abstract type MediumProperties end
 abstract type DispersionModel end
+abstract type ScatteringModel end
+abstract type AbsorptionModel end
+
+struct Kopelevich <: ScatteringModel end
+struct DefaultAbsorption <: AbsorptionModel end
 
 
 struct PMTModel{T1, T2}
@@ -39,6 +44,8 @@ end
 #         0.2, 0.1, 0.0, 0.0],
 #         NoBoundaries()
 # )
+#
+const α = 1.0/137.036  # Fine-structure constant
 
 const PMTKM3NeT = PMTModel(
     45.4e-4,
@@ -66,7 +73,7 @@ const PMTKM3NeT = PMTModel(
     ),
 
     # using eps(), max angle and two zero values in the second vector to
-    # get real zeros outside of the upper boundary defined in Jpp (>=0.4)
+    # get real zeros outside of the upper boundary defined in Jpp (i.e. >=0.4)
     LinearInterpolator(
         [-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
         -0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.00,
@@ -81,11 +88,6 @@ const PMTKM3NeT = PMTModel(
 )
 
 
-const α = 1.0/137.036
-const dx = π / 25
-const wmin = 300
-const wmax = 700
-
 Base.@kwdef struct BasicDispersion <: DispersionModel
     P::Float64 = 1                 #  ambient pressure [atm]
     a0::Float64 = 1.3201           #  offset
@@ -99,14 +101,25 @@ const DispersionORCA = BasicDispersion(240)
 const DispersionARCA = BasicDispersion(350)
 
 
-Base.@kwdef struct Parameters
+Base.@kwdef struct Parameters{D<:DispersionModel, S<:ScatteringModel, A<:AbsorptionModel}
     minimum_distance::Float64 = 1.0e-1
-    lambda_min::Float64 = 300
-    lambda_max::Float64 = 700
+    lambda_min::Float64 = 300.0
+    lambda_max::Float64 = 700.0
+    legendre_coefficients::Tuple{Vector{Float64}, Vector{Float64}} = gausslegendre(5)
+    dispersion_model::D = BasicDispersion()
+    scattering_model::S = Kopelevich()
+    absorption_model::A = DefaultAbsorption()
+end
+function Base.show(io::IO, p::Parameters)
+    println(io, "Parameters:")
+    println(io, "  minimum distance = $(p.minimum_distance)")
+    println(io, "  lambda min/max = $(p.lambda_min)/$(p.lambda_max)")
+    println(io, "  degree of Legendre polynomials = $(length(first(p.legendre_coefficients)))")
+    println(io, "  dispersion model = $(p.dispersion_model)")
+    println(io, "  scattering model = $(p.scattering_model)")
+    print(io, "  absorption model = $(p.absorption_model)")
 end
 
-@inline getRmin() = 1.0e-1
-@inline getPhotocathodeArea() = 45.4e-4
 @inline function refractionindexphase(λ, dp::DispersionModel=BasicDispersion())
     x = 1.0 / λ
     dp.a0  +  dp.a1*dp.P  +  x*(dp.a2 + x*(dp.a3 + x*dp.a4))
@@ -115,16 +128,17 @@ end
     error("Not implemented yet")
 end
 
+const absorptionlengthinterpolator = LinearInterpolator(
+    [0, 290, 310, 330, 350, 375, 412, 440, 475, 488, 510, 532, 555, 650, 676, 715, 720, 999999],
+    [0.0, 0.0, 11.9, 16.4, 20.6, 29.5, 48.5, 67.5, 59.0, 55.1, 26.1, 19.9, 14.7, 2.8, 2.3, 1.0, 0.0, 0.0],
+    NoBoundaries()
+)
 """
     absorptionlength(λ)
 
 Returns the absorption length [m] for a given wavelength [nm].
 """
-const absorptionlength = LinearInterpolator(
-    [0, 290, 310, 330, 350, 375, 412, 440, 475, 488, 510, 532, 555, 650, 676, 715, 720, 999999],
-    [0.0, 0.0, 11.9, 16.4, 20.6, 29.5, 48.5, 67.5, 59.0, 55.1, 26.1, 19.9, 14.7, 2.8, 2.3, 1.0, 0.0, 0.0],
-    NoBoundaries()
-)
+absorptionlength(::DefaultAbsorption, λ) = absorptionlengthinterpolator(λ)
 
 """
     scatteringlength(λ)
@@ -140,7 +154,7 @@ the contributions by:
 Values are taken from reference C.D. Mobley "Light and Water", ISBN 0-12-502750-8, pag. 119.
 
 """
-function scatteringlength(λ)
+function scatteringlength(::Kopelevich, λ)
     Vs = 0.0075
     Vl = 0.0075
     bw = 0.0017
@@ -174,7 +188,6 @@ function cherenkov(λ, n)
 end
 
 
-
 """
     directlight(dp::DispersionModel, pmt::PMTModel, R, θ, ϕ)
 
@@ -193,11 +206,10 @@ with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ
 
 
 """
-function directlight(dp::DispersionModel, pmt::PMTModel, R, θ, ϕ)
+function directlight(params::Parameters, pmt::PMTModel, R, θ, ϕ)
     value = 0
 
-
-    R  =  max(R, getRmin())
+    R  =  max(R, params.minimum_distance)
     A  =  pmt.photocathode_area
 
     px =  sin(θ)*cos(ϕ)
@@ -209,24 +221,27 @@ function directlight(dp::DispersionModel, pmt::PMTModel, R, θ, ϕ)
     # @show wmax
 
     # for (m_x, m_y) in [(cos(x), sin(x)) for x in 0.5dx:dx:π]
-    for (m_x, m_y) in zip(gausslegendre(5)...)
+    for (m_x, m_y) in zip(params.legendre_coefficients...)
+    # gl = gausslegendre(5)
+    # m_x = gl[1][1]
+    # m_y = gl[2][1]
 
       # println("-----------")
       # @show m_x
       # @show m_y
 
-      w  = 0.5 * (wmax + wmin)  +  m_x * 0.5 * (wmax - wmin)
+      w  = 0.5 * (params.lambda_max + params.lambda_min)  +  m_x * 0.5 * (params.lambda_max - params.lambda_min)
       # @show w
 
-      dw = m_y * 0.5 * (wmax - wmin)
+      dw = m_y * 0.5 * (params.lambda_max - params.lambda_min)
       # @show dw
 
-      n     = refractionindexphase(w, dp)
+      n     = refractionindexphase(w, params.dispersion_model)
       # @show n
 
-      l_abs = absorptionlength(w);
+      l_abs = absorptionlength(params.absorption_model, w);  # 59 allocs, 500ns
       # @show l_abs
-      ls    = scatteringlength(w);
+      ls    = scatteringlength(params.scattering_model, w);  # 0 allocs, 180ns
       # @show ls
 
       # @show cherenkov(w,n)
