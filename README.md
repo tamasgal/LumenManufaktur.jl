@@ -42,18 +42,24 @@ Here are some benchmarks made on a MacBook Air M1 2020:
 ``` julia-repl
 julia> using MuonLight
 
-julia> dp = MuonLight.DispersionARCA
-BasicDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
+julia> params = MuonLight.Parameters(dispersion_model=MuonLight.DispersionARCA)
+Parameters:
+  minimum distance = 0.1
+  lambda min/max = 300.0/700.0
+  degree of Legendre polynomials = 5
+  dispersion model = BasicDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
+  scattering model = MuonLight.Kopelevich()
+  absorption model = MuonLight.DefaultAbsorption()
 
-julia> @benchmark MuonLight.directlight($dp, $MuonLight.PMTKM3NeT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
-BenchmarkTools.Trial: 10000 samples with 196 evaluations.
- Range (min … max):  466.199 ns …   6.137 μs  ┊ GC (min … max): 0.00% … 88.89%
- Time  (median):     477.469 ns               ┊ GC (median):    0.00%
- Time  (mean ± σ):   488.605 ns ± 175.758 ns  ┊ GC (mean ± σ):  1.25% ±  3.18%
+julia> @benchmark MuonLight.directlight($params, $MuonLight.PMTKM3NeT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
+BenchmarkTools.Trial: 10000 samples with 198 evaluations.
+ Range (min … max):  434.131 ns …  2.985 μs  ┊ GC (min … max): 0.00% … 81.73%
+ Time  (median):     445.076 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   451.110 ns ± 59.088 ns  ┊ GC (mean ± σ):  0.28% ±  1.93%
 
-    ▃▅▆▇██▆▃▁▁▂▃▃▄▄▅▄▃▁▁                                        ▂
-  ▅████████████████████████████▇▇██▆▅▆▆▅▄▅▅▆▅▅▅▄▄▇▄▃▆▅▁▁▅▄▃▃▄▃▅ █
-  466 ns        Histogram: log(frequency) by time        564 ns <
+       ▆█▂                                                      
+  ▂▃▄▄████▅▄▃▄▃▄▄▄▃▃▂▂▂▂▂▂▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▁▂▂▂▂▁▂▂▂▂▂▂▂ ▃
+  434 ns          Histogram: frequency by time          532 ns <
 
- Memory estimate: 320 bytes, allocs estimate: 7.
+ Memory estimate: 160 bytes, allocs estimate: 5.
 ```
