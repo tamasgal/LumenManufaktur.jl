@@ -1,6 +1,6 @@
-# MuonLight.jl
+# LumenManufaktur.jl
 
-This is the documentation of the awesome `MuonLight.jl` Julia package.
+This is the documentation of the awesome `LumenManufaktur.jl` Julia package.
 
 !!! note
 
@@ -8,7 +8,7 @@ This is the documentation of the awesome `MuonLight.jl` Julia package.
 
 ## Installation
 
-`MuonLight.jl` is **not an officially registered Julia package** but it's available on
+`LumenManufaktur.jl` is **not an officially registered Julia package** but it's available on
 the **[KM3NeT Julia registry](https://git.km3net.de/common/julia-registry)**. To add
 the KM3NeT Julia registry to your local Julia registry list, follow the
 instructions in its
@@ -16,14 +16,14 @@ instructions in its
 
     git clone https://git.km3net.de/common/julia-registry ~/.julia/registries/KM3NeT
     
-After that, you can instal `MuonLight.jl` just like any other Julia package:
+After that, you can instal `LumenManufaktur.jl` just like any other Julia package:
 
-    julia> import Pkg; Pkg.add("MuonLight")
+    julia> import Pkg; Pkg.add("LumenManufaktur")
     
 ## Quickstart
 
 
 ``` julia-repl
-julia> using MuonLight
+julia> using LumenManufaktur
 
 ```

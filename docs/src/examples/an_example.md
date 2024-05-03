@@ -3,7 +3,7 @@
 The following function determines the meaning of life.
 
 ```@example usage
-using MuonLight
+using LumenManufaktur
 
 meaningoflife()
 ```

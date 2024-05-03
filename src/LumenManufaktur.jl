@@ -1,12 +1,9 @@
-module MuonLight
+module LumenManufaktur
 
 using BasicInterpolators
 using FastGaussQuadrature
 
-export directlight
-export BasicDispersion
-export DispersionORCA
-export DispersionARCA
+include("exports.jl")
 
 abstract type MediumProperties end
 abstract type DispersionModel end
@@ -189,7 +186,7 @@ end
 
 
 """
-    directlight(dp::DispersionModel, pmt::PMTModel, R, θ, ϕ)
+    directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
 with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ`
@@ -206,7 +203,7 @@ with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ
 
 
 """
-function directlight(params::Parameters, pmt::PMTModel, R, θ, ϕ)
+function directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
     value = 0
 
     R  =  max(R, params.minimum_distance)
@@ -267,7 +264,7 @@ end
 
 
 """
-    directlight(R, θ, ϕ, Δt)
+    directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ, Δt)
 
 Probability density function for direct Cherenkov light from a muon with a
 distance of `R` [m] to the PMT, time difference `Δt` [ns] relative to direct

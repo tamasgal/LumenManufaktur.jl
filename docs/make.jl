@@ -1,8 +1,8 @@
-using Documenter, MuonLight
+using Documenter, LumenManufaktur
 
 makedocs(;
-    modules = [MuonLight],
-    sitename = "MuonLight.jl",
+    modules = [LumenManufaktur],
+    sitename = "LumenManufaktur.jl",
     authors = "Tamas Gal",
     format = Documenter.HTML(;
         assets = ["assets/custom.css"],
@@ -19,13 +19,13 @@ makedocs(;
         "API" => "api.md"
     ],
     repo = Documenter.Remotes.URL(
-        "https://git.km3net.de/tgal/MuonLight.jl/blob/{commit}{path}#L{line}",
-        "https://git.km3net.de/tgal/MuonLight.jl"
+        "https://git.km3net.de/tgal/LumenManufaktur.jl/blob/{commit}{path}#L{line}",
+        "https://git.km3net.de/tgal/LumenManufaktur.jl"
     ),
 )
 
 deploydocs(;
-  repo = "git.km3net.de/tgal/MuonLight.jl",
+  repo = "git.km3net.de/tgal/LumenManufaktur.jl",
   devbranch = "main",
   push_preview=true
 )
