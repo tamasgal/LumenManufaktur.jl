@@ -102,11 +102,11 @@ function Base.show(io::IO, p::LMParameters)
     print(io, "  absorption model = $(p.absorption_model)")
 end
 
-@inline function refractionindexphase(dp::DispersionModel=BaileyDispersion(), λ)
+@inline function refractionindexphase(dp::BaileyDispersion, λ)
     x = 1.0 / λ
     dp.a0  +  dp.a1*dp.P  +  x*(dp.a2 + x*(dp.a3 + x*dp.a4))
 end
-@inline function refractionindexgroup(dp::DispersionModel=BaileyDispersion(), λ)
+@inline function refractionindexgroup(dp::BaileyDispersion, λ)
     error("Not implemented yet")
 end
 
