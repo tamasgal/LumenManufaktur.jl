@@ -22,10 +22,11 @@ end
 
 const α = 1.0/137.036  # Fine-structure constant
 
-const PMTKM3NeT = PMTModel(
+const KM3NeTPMT = PMTModel(
     45.4e-4,
+    # The quantum efficiency includes absorption in glass and gel.
     # Yields slightly different values compared to the Jpp getQE() function,
-    # very probably due to the interpolation implementation
+    # very probably due to the interpolation implementation.
     LinearInterpolator(
         [0, 270, 275, 280, 285, 290, 295, 300, 305, 310, 315, 320, 325, 330, 335,
         340, 345, 350, 355, 360, 365, 370, 375, 380, 385, 390, 395, 400, 405, 410,
@@ -48,7 +49,7 @@ const PMTKM3NeT = PMTModel(
     ),
 
     # using eps(), max angle and two zero values in the second vector to
-    # get real zeros outside of the upper boundary defined in Jpp (i.e. >=0.4)
+    # get exact zeros outside of the upper boundary defined in Jpp (i.e. >=0.4)
     LinearInterpolator(
         [-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
         -0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.00,
@@ -63,7 +64,13 @@ const PMTKM3NeT = PMTModel(
 )
 
 
-Base.@kwdef struct BasicDispersion <: DispersionModel
+"""
+Light dispersion for water in deep sea based on David J.L. Bailey's work: "Monte Carlo
+tools and analysis methods for understanding the ANTARES experiment and
+predicting its sensitivity to Dark Matter" - PhD thesis, University of Oxford,
+United Kingdom, 2002.
+"""
+Base.@kwdef struct BaileyDispersion <: DispersionModel
     P::Float64 = 1                 #  ambient pressure [atm]
     a0::Float64 = 1.3201           #  offset
     a1::Float64 = 1.4e-5           #  dn/dP
@@ -71,22 +78,22 @@ Base.@kwdef struct BasicDispersion <: DispersionModel
     a3::Float64 = -4383.0          #  d^2n/(dx)^2
     a4::Float64 = 1.1455e6         #  d^3n/(dx)^3
 end
-BasicDispersion(P) = BasicDispersion(P=P)
-const DispersionORCA = BasicDispersion(240)
-const DispersionARCA = BasicDispersion(350)
+BaileyDispersion(P) = BaileyDispersion(P=P)
+const DispersionORCA = BaileyDispersion(240)
+const DispersionARCA = BaileyDispersion(350)
 
 
-Base.@kwdef struct Parameters{D<:DispersionModel, S<:ScatteringModel, A<:AbsorptionModel}
+Base.@kwdef struct LMParameters{D<:DispersionModel, S<:ScatteringModel, A<:AbsorptionModel}
     minimum_distance::Float64 = 1.0e-1
     lambda_min::Float64 = 300.0
     lambda_max::Float64 = 700.0
     legendre_coefficients::Tuple{Vector{Float64}, Vector{Float64}} = gausslegendre(5)
-    dispersion_model::D = BasicDispersion()
+    dispersion_model::D = BaileyDispersion()
     scattering_model::S = Kopelevich()
     absorption_model::A = DefaultAbsorption()
 end
-function Base.show(io::IO, p::Parameters)
-    println(io, "Parameters:")
+function Base.show(io::IO, p::LMParameters)
+    println(io, "LMParameters:")
     println(io, "  minimum distance = $(p.minimum_distance)")
     println(io, "  lambda min/max = $(p.lambda_min)/$(p.lambda_max)")
     println(io, "  degree of Legendre polynomials = $(length(first(p.legendre_coefficients)))")
@@ -95,11 +102,11 @@ function Base.show(io::IO, p::Parameters)
     print(io, "  absorption model = $(p.absorption_model)")
 end
 
-@inline function refractionindexphase(λ, dp::DispersionModel=BasicDispersion())
+@inline function refractionindexphase(dp::DispersionModel=BaileyDispersion(), λ)
     x = 1.0 / λ
     dp.a0  +  dp.a1*dp.P  +  x*(dp.a2 + x*(dp.a3 + x*dp.a4))
 end
-@inline function refractionindexgroup(λ, dp::DispersionModel=BasicDispersion())
+@inline function refractionindexgroup(dp::DispersionModel=BaileyDispersion(), λ)
     error("Not implemented yet")
 end
 
@@ -164,7 +171,7 @@ end
 
 
 """
-    directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
+    directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
 with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ`
@@ -181,7 +188,7 @@ with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ
 
 
 """
-function directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
+function directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
     value = 0
 
     R  =  max(R, params.minimum_distance)
@@ -192,7 +199,7 @@ function directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ)
     for (m_x, m_y) in zip(params.legendre_coefficients...)
       w  = 0.5 * (params.lambda_max + params.lambda_min)  +  m_x * 0.5 * (params.lambda_max - params.lambda_min)
       dw = m_y * 0.5 * (params.lambda_max - params.lambda_min)
-      n     = refractionindexphase(w, params.dispersion_model)
+      n     = refractionindexphase(params.dispersion_model, w)
       l_abs = absorptionlength(params.absorption_model, w);  # 59 allocs, 500ns
       ls    = scatteringlength(params.scattering_model, w);  # 0 allocs, 180ns
       npe   = cherenkov(w,n) * dw * pmt.quantum_efficiency(w);
@@ -210,7 +217,7 @@ end
 
 
 """
-    directlightfrommuon(params::Parameters, pmt::PMTModel, R, θ, ϕ, Δt)
+    directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
 
 Probability density function for direct Cherenkov light from a muon with a
 distance of `R` [m] to the PMT, time difference `Δt` [ns] relative to direct
