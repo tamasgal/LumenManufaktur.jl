@@ -1,6 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-LumenManufaktur = "a63c60df-84c5-40dc-bdf1-cfe657ef319c"
 
 [compat]
 Documenter = "1"
