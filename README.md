@@ -47,7 +47,7 @@ LMParameters:
   minimum distance = 0.1
   lambda min/max = 300.0/700.0
   degree of Legendre polynomials = 5
-  dispersion model = BasicDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
+  dispersion model = BaileyDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
   scattering model = LumenManufaktur.Kopelevich()
   absorption model = LumenManufaktur.DefaultAbsorption()
 
