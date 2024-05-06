@@ -118,7 +118,10 @@ const absorptionlengthinterpolator = LinearInterpolator(
 """
     absorptionlength(λ)
 
-Returns the absorption length [m] for a given wavelength [nm].
+Returns the absorption length [m] in deep sea water for a given wavelength [nm].
+Reference missing! The interpolation values are taken from the Jpp framework,
+written by Maarten de Jong.
+
 """
 absorptionlength(::DefaultAbsorption, λ) = absorptionlengthinterpolator(λ)
 
