@@ -72,6 +72,6 @@ docs:
         Pkg.develop(PackageSpec(path=pwd()))
         Pkg.instantiate()
         using Documenter: doctest
-        using MuonLight
-        doctest(MuonLight)
+        using LumenManufaktur
+        doctest(LumenManufaktur)
         include("docs/make.jl")'
