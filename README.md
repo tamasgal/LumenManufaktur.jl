@@ -42,8 +42,8 @@ Below are some benchmarks made on a MacBook Air M1 2020.
 ``` julia-repl
 julia> using LumenManufaktur
 
-julia> params = LumenManufaktur.Parameters(dispersion_model=LumenManufaktur.DispersionARCA)
-Parameters:
+julia> params = LMParameters(dispersion_model=DispersionARCA)
+LMParameters:
   minimum distance = 0.1
   lambda min/max = 300.0/700.0
   degree of Legendre polynomials = 5
@@ -51,7 +51,7 @@ Parameters:
   scattering model = LumenManufaktur.Kopelevich()
   absorption model = LumenManufaktur.DefaultAbsorption()
 
-julia> @benchmark LumenManufaktur.directlight($params, $LumenManufaktur.PMTKM3NeT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
+julia> @benchmark directlightfrommuon($params, $LumenManufaktur.PMTKM3NeT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
 BenchmarkTools.Trial: 10000 samples with 198 evaluations.
  Range (min … max):  434.131 ns …  2.985 μs  ┊ GC (min … max): 0.00% … 81.73%
  Time  (median):     445.076 ns              ┊ GC (median):    0.00%
@@ -71,9 +71,9 @@ requires 2 allocations in total and has a memory estimate of 192 bytes:
 
 ``` julia-repl
 julia> function manycalls()
-           params = LumenManufaktur.Parameters(dispersion_model=LumenManufaktur.DispersionARCA)
+           params = LMParameters(dispersion_model=DispersionARCA)
            for i in 1:1000
-               LumenManufaktur.directlight(params, LumenManufaktur.PMTKM3NeT, rand()*300+1, rand()*2π, rand()*2π)
+               directlightfrommuon(params, LumenManufaktur.PMTKM3NeT, rand()*300+1, rand()*2π, rand()*2π)
            end
        end
 manycalls (generic function with 1 method)
