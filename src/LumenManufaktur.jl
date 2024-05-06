@@ -177,11 +177,12 @@ end
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
-with a distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith) and `ϕ`
-[rad] (azimuth) with respect to the PMT axis.
+with a closest distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith)
+and `ϕ` [rad] (azimuth) with respect to the PMT axis.
 
 # Arguments
 
+- `R`: the (closest) distance [m] between muon and PMT
 - `ϕ`: the zenith angle [rad] which is 0 when the PMT points away from the muon
   track (in x-direction) and rotates counter clockwise to the y-axis when
   viewed from above, while the z-axis points upwards.
