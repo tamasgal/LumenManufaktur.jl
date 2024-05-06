@@ -19,5 +19,5 @@ the closest distance of `R=23.5`, with a standard KM3NeT PMT pointing in the
 direction of `θ=π` and `ϕ=π/2`, we call `directlightfrommuon()`:
 
 ```@example directlightfrommuon
-directlight(params, LumenManufaktur.KM3NeTPMT, 23.5, π, π/2)
+directlightfrommuon(params, LumenManufaktur.KM3NeTPMT, 23.5, π, π/2)
 ```
