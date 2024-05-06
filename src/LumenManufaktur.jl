@@ -4,15 +4,9 @@ using BasicInterpolators
 using FastGaussQuadrature
 
 include("dispersion.jl")
-#include("scattering.jl")
-#include("absorption.jl")
+include("scattering.jl")
+include("absorption.jl")
 include("exports.jl")
-
-abstract type ScatteringModel end
-abstract type AbsorptionModel end
-
-struct Kopelevich <: ScatteringModel end
-struct DefaultAbsorption <: AbsorptionModel end
 
 
 struct PMTModel{T1, T2}
@@ -82,52 +76,6 @@ function Base.show(io::IO, p::LMParameters)
     println(io, "  dispersion model = $(p.dispersion_model)")
     println(io, "  scattering model = $(p.scattering_model)")
     print(io, "  absorption model = $(p.absorption_model)")
-end
-
-
-const absorptionlengthinterpolator = LinearInterpolator(
-    [0, 290, 310, 330, 350, 375, 412, 440, 475, 488, 510, 532, 555, 650, 676, 715, 720, 999999],
-    [0.0, 0.0, 11.9, 16.4, 20.6, 29.5, 48.5, 67.5, 59.0, 55.1, 26.1, 19.9, 14.7, 2.8, 2.3, 1.0, 0.0, 0.0],
-    NoBoundaries()
-)
-"""
-    absorptionlength(λ)
-
-Returns the absorption length [m] in deep sea water for a given wavelength [nm].
-Reference missing! The interpolation values are taken from the Jpp framework,
-written by Maarten de Jong.
-
-"""
-absorptionlength(::DefaultAbsorption, λ) = absorptionlengthinterpolator(λ)
-
-"""
-    scatteringlength(λ)
-
-Calculates the scattering length [m] for a given wavelength `λ` [ns] using the
-Kopelevich model for spectral volume scattering functions. The model separates
-the contributions by:
-
-    - pure_sea:   pure sea water;
-    - small_par: 'small' particles (size < 1 micro meter);
-    - large_par: 'large' particles (size > 1 micro meter).
-
-Values are taken from reference C.D. Mobley "Light and Water", ISBN 0-12-502750-8, pag. 119.
-
-"""
-function scatteringlength(::Kopelevich, λ)
-    Vs = 0.0075
-    Vl = 0.0075
-    bw = 0.0017
-    bs = 1.340
-    bl = 0.312
-
-    x = 550.0 / λ
-
-    pure_sea  = bw *      x^4.3
-    small_par = bs * Vs * x^1.7
-    large_par = bl * Vl * x^0.3
-
-    1.0 / (pure_sea + small_par + large_par)
 end
 
 
