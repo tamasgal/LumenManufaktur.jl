@@ -25,7 +25,7 @@ function scatteringlength(::Kopelevich, λ)
 
     x = 550.0 / λ
 
-    pure_sea  = bw *      x^4.3
+    pure_sea = bw * x^4.3
     small_par = bs * Vs * x^1.7
     large_par = bl * Vl * x^0.3
 

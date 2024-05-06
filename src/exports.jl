@@ -1,6 +1,1 @@
-export
-    directlightfrommuon,
-    LMParameters,
-    BaileyDispersion,
-    DispersionORCA,
-    DispersionARCA
+export directlightfrommuon, LMParameters, BaileyDispersion, DispersionORCA, DispersionARCA

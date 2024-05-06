@@ -18,14 +18,14 @@ Base.@kwdef struct BaileyDispersion <: DispersionModel
     a4::Float64 = 1.1455e6         #  d^3n/(dx)^3
 end
 
-BaileyDispersion(P) = BaileyDispersion(P=P)
+BaileyDispersion(P) = BaileyDispersion(P = P)
 const DispersionORCA = BaileyDispersion(240)
 const DispersionARCA = BaileyDispersion(350)
 
 
 @inline function refractionindexphase(dp::BaileyDispersion, λ)
     x = 1.0 / λ
-    dp.a0  +  dp.a1*dp.P  +  x*(dp.a2 + x*(dp.a3 + x*dp.a4))
+    dp.a0 + dp.a1 * dp.P + x * (dp.a2 + x * (dp.a3 + x * dp.a4))
 end
 
 
