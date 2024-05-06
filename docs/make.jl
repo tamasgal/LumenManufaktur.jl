@@ -14,7 +14,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Examples" => Any[
-            "examples/an_example.md",
+            "examples/directlightfrommuon.md",
         ],
         "API" => "api.md"
     ],
