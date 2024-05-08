@@ -1,7 +1,7 @@
 name = "LumenManufaktur"
 uuid = "a63c60df-84c5-40dc-bdf1-cfe657ef319c"
 authors = ["Tamas Gal"]
-version = "0.2.1"
+version = "0.3.0"
 
 [deps]
 BasicInterpolators = "26cce99e-4866-4b6d-ab74-862489e035e0"
