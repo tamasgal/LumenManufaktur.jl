@@ -13,7 +13,10 @@ makedocs(;
     warnonly = [:missing_docs],
     pages = [
         "Home" => "index.md",
-        "Examples" => Any["examples/directlightfrommuon.md",],
+        "Examples" => Any[
+            "examples/directlightfrommuon.md",
+            "examples/npes_and_zenith_angles.md",
+        ],
         "API" => "api.md",
     ],
     repo = Documenter.Remotes.URL(
