@@ -19,16 +19,16 @@ end
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
-with a closest distance of `R` [m] to the PMT and the angles `θ` [rad] (zenith)
-and `ϕ` [rad] (azimuth) with respect to the PMT axis.
+with a closest distance of `R` [m] to the PMT and the angles `θ` \\[rad\\] (zenith)
+and `ϕ` \\[rad\\] (azimuth) with respect to the PMT axis.
 
 # Arguments
 
 - `R`: (closest) distance [m] between muon and PMT
-- `ϕ`: zenith angle [rad] which is 0 when the PMT points away from the muon
+- `ϕ`: zenith angle \\[rad\\] which is 0 when the PMT points away from the muon
   track (in x-direction) and rotates counter clockwise to the y-axis when
   viewed from above, while the z-axis points upwards.
-- `θ`: azimuth angle [rad] which is 0 when the PMT points upwards (along the
+- `θ`: azimuth angle \\[rad\\] which is 0 when the PMT points upwards (along the
   z-axis) and π/2 when pointing downwards. Between 0 and π/2, the PMT points to
   the z-axis
 """
@@ -66,18 +66,18 @@ end
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
 
 Probability density function for direct Cherenkov light from a muon with a
-closest distance of `R` [m] to the PMT, the angles `θ` [rad] (zenith) and `ϕ`
-[rad] (azimuth) with respect to the PMT axis and a time difference `Δt` [ns]
+closest distance of `R` [m] to the PMT, the angles `θ` \\[rad\\] (zenith) and `ϕ`
+\\[rad\\] (azimuth) with respect to the PMT axis and a time difference `Δt` [ns]
 relative to direct Cherenkov light. Returns dP/dt [npe/ns].
 
 # Arguments
 
 - `params`: parameters of the setup
 - `R`: (closest) distance [m] between muon and PMT
-- `ϕ`: zenith angle [rad] which is 0 when the PMT points away from the muon
+- `ϕ`: zenith angle \\[rad\\] which is 0 when the PMT points away from the muon
   track (in x-direction) and rotates counter clockwise to the y-axis when
   viewed from above, while the z-axis points upwards.
-- `θ`: azimuth angle [rad] which is 0 when the PMT points upwards (along the
+- `θ`: azimuth angle \\[rad\\] which is 0 when the PMT points upwards (along the
   z-axis) and π/2 when pointing downwards. Between 0 and π/2, the PMT points to
   the z-axis
 - `Δt`: time difference [ns] relative to the Cherenkov light
@@ -165,8 +165,8 @@ Probability density function for scattered light from muon. Returns [d^2P/dt/dx]
 - `pmt`: PMT model
 - `D`: distance between track segment and PMT [m]
 - `cd`: cosine angle of muon direction and track segment - PMT position
-- `θ`: zenith  angle orientation PMT [rad]
-- `ϕ`: azimuth angle orientation PMT [rad]
+- `θ`: zenith  angle orientation PMT \\[rad\\]
+- `ϕ`: azimuth angle orientation PMT \\[rad\\]
 - `Δt`: time difference relative to direct Cherenkov light
 """
 function scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
