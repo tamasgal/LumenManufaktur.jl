@@ -27,9 +27,20 @@ Returns the probability.
 # Arguments
 - `x`: cosine emission angle
 """
-function deltayprobability(x)
+function deltarayprobability(x)
     0.188 * exp(-1.25 * abs(x - 0.90)^1.30)
 end
+
+
+
+"""
+    geanc()
+
+Equivalent muon track length per unit shower energy [m/GeV].
+
+See ANTARES internal note ANTARES-SOFT-2002-015, J. Brunner.
+"""
+@inline geanc() = 4.7319  # dx/dE [m/GeV]
 
 
 """
@@ -329,7 +340,6 @@ relative to direct Cherenkov light. Returns d^2P/dt/dE [npe/ns ⋅ m/GeV].
 - `Δt`: time difference [ns] relative to the Cherenkov light
 """
 function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
-    error("Not implemented yet")
     value = 0.0
 
     R = max(R, params.minimum_distance)
@@ -366,39 +376,32 @@ function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ
 
         npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
 
-        # TODO: WTF?
-        #   JRoot rz(R, ng, t)  # square root
+        root = Root(R, ng, t)  # square root
 
-        #   if (!rz.is_valid) {
-        #     continue;
-        #   }
+        !root.isvalid && continue
 
-        #   for (int j = 0; j != 2; ++j) {
+        for z in (root.most_upstream, root.most_downstream)
 
-        #     z = rz[j];
+            C * t <= z && continue
 
-        #     if (C * t <= z)
-        #       continue;
+            d = sqrt(z * z + R * R)  # distance traveled by photon
 
-        #     d = sqrt(z * z + R * R)  # distance traveled by photon
+            ct0 = -z / d;
+            st0 = R / d;
 
-        #     ct0 = -z / d;
-        #     st0 = R / d;
+            dz = D / st0  # average track length
+            ct = st0 * px + ct0 * pz  # cosine angle of incidence on PMT
 
-        #     dz = D / st0  # average track length
-        #     ct =
-        #         st0 * px + ct0 * pz  # cosine angle of incidence on PMT
+            U = pmt.angular_acceptance(ct)  # PMT angular acceptance
+            V = exp(-d / l_abs - d / ls)  # absorption & scattering
+            W = A / (d * d)  # solid angle
 
-        #     U = pmt.angular_acceptance(ct)  # PMT angular acceptance
-        #     V = exp(-d / l_abs - d / ls)  # absorption & scattering
-        #     W = A / (d * d)  # solid angle
+            Ja = deltarayprobability(ct0)  # d^2N/dcos/dϕ
+            Jd = (1.0 - ng * ct0) / C  # d  t/ dz
+            Je = ng * st0 * st0 * st0 / (R * C)  # d^2t/(dz)^2
 
-        #     Ja = deltarayprobability(ct0)  # d^2N/dcos/dϕ
-        #     Jd = (1.0 - ng * ct0) / C  # d  t/ dz
-        #     Je = ng * st0 * st0 * st0 / (R * C)  # d^2t/(dz)^2
-
-        #     value += npe * geanc() * U * V * W * Ja / (fabs(Jd) + 0.5 * Je * dz);
-        #   }
+            value += npe * geanc() * U * V * W * Ja / (abs(Jd) + 0.5 * Je * dz);
+        end
 
     end
     return value
@@ -570,11 +573,11 @@ Helper struct to find solution(s) to ``z`` of the square root expression:
 
 ```math
 \begin{aligned}
-ct(z=0) & = & z + n \sqrt{z^2 + R^2}
+ct(z=0) & = & z + n \\sqrt{z^2 + R^2}
 \end{aligned}
 ```
 
-where ``n = 1/\cos(\theta_{c})`` is the index of refraction.
+where ``n = 1/\\cos(\\theta_{c})`` is the index of refraction.
 
 # Arguments
 

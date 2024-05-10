@@ -1,6 +1,8 @@
 export
     directlightfrommuon,
     scatteredlightfrommuon,
+    directlightfromdeltarays,
+    scatteredlightfromdeltarays,
     LMParameters,
     PMTModel,
     absorptionlength,
