@@ -329,6 +329,7 @@ relative to direct Cherenkov light. Returns d^2P/dt/dE [npe/ns ⋅ m/GeV].
 - `Δt`: time difference [ns] relative to the Cherenkov light
 """
 function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
+    error("Not implemented yet")
     value = 0.0
 
     R = max(R, params.minimum_distance)
