@@ -6,56 +6,71 @@ using InteractiveUtils
 
 # ╔═╡ 6f448138-0b23-11ef-1b83-859c53214856
 begin
-	using CairoMakie
-	using LumenManufaktur
+    using CairoMakie
+    using LumenManufaktur
 end
 
 # ╔═╡ 7292e824-7de9-4d1f-ab2d-895f6fadfd88
 pkgversion(LumenManufaktur)
 
 # ╔═╡ 2a28e349-c9a1-4fb1-a06b-b1b616c20597
-directlightfrommuon(LMParameters(), LumenManufaktur.KM3NeTPMT, 5.23, π, π/2)
+directlightfrommuon(LMParameters(), LumenManufaktur.KM3NeTPMT, 5.23, π, π / 2)
 
 # ╔═╡ aa28dd35-653e-4433-b0af-4d6050696bc2
-directlightfrommuon(LMParameters(), LumenManufaktur.KM3NeTPMT, 1.15, π/1.5, π/2, 0.01)
+directlightfrommuon(LMParameters(), LumenManufaktur.KM3NeTPMT, 1.15, π / 1.5, π / 2, 0.01)
 
 # ╔═╡ c89f6755-8dfe-4f8e-a640-d5f52b21c9b6
 let
-	fig = Figure(size = (600, 400));
-	ax = Axis(
-		fig[1, 1],
-		xlabel = "distance between muon and PMT / m",
-		ylabel = "npe",
-		xgridstyle = :dash, 
-		ygridstyle = :dash
-	)
-	Rs = range(1, 10, 1000)
-	params = LMParameters(dispersion_model=BaileyDispersion(240))
-	pmt = LumenManufaktur.KM3NeTPMT
-	lines!(ax, Rs, [directlightfrommuon(params, pmt, R, π, π/2) for R in Rs], label="θ = π")
-	lines!(ax, Rs, [directlightfrommuon(params, pmt, R, π/2, π/2) for R in Rs], label="θ = π/2")
-	axislegend(; position = :rt)
-	fig
+    fig = Figure(size = (600, 400))
+    ax = Axis(
+        fig[1, 1],
+        xlabel = "distance between muon and PMT / m",
+        ylabel = "npe",
+        xgridstyle = :dash,
+        ygridstyle = :dash,
+    )
+    Rs = range(1, 10, 1000)
+    params = LMParameters(dispersion_model = BaileyDispersion(240))
+    pmt = LumenManufaktur.KM3NeTPMT
+    lines!(
+        ax,
+        Rs,
+        [directlightfrommuon(params, pmt, R, π, π / 2) for R in Rs],
+        label = "θ = π",
+    )
+    lines!(
+        ax,
+        Rs,
+        [directlightfrommuon(params, pmt, R, π / 2, π / 2) for R in Rs],
+        label = "θ = π/2",
+    )
+    axislegend(; position = :rt)
+    fig
 end
 
 # ╔═╡ b6bd1af8-f5af-4536-b903-f894f4bee50f
 let
-	fig = Figure(size = (600, 400));
-	ax = Axis(
-		fig[1, 1],
-		xlabel = "PMT zenith angle [rad]",
-		ylabel = "npe",
-		xgridstyle = :dash, 
-		ygridstyle = :dash
-	)
-	θs = range(-π, π, 1000)
-	params = LMParameters(dispersion_model=BaileyDispersion(240))
-	pmt = LumenManufaktur.KM3NeTPMT
-	for R in 2:10
-		lines!(ax, θs, [directlightfrommuon(params, pmt, R, θ, π/2) for θ in θs], label="R = $R m")
-	end
-	axislegend(; position = :ct)
-	fig
+    fig = Figure(size = (600, 400))
+    ax = Axis(
+        fig[1, 1],
+        xlabel = "PMT zenith angle [rad]",
+        ylabel = "npe",
+        xgridstyle = :dash,
+        ygridstyle = :dash,
+    )
+    θs = range(-π, π, 1000)
+    params = LMParameters(dispersion_model = BaileyDispersion(240))
+    pmt = LumenManufaktur.KM3NeTPMT
+    for R = 2:10
+        lines!(
+            ax,
+            θs,
+            [directlightfrommuon(params, pmt, R, θ, π / 2) for θ in θs],
+            label = "R = $R m",
+        )
+    end
+    axislegend(; position = :ct)
+    fig
 end
 
 # ╔═╡ a3027c77-7f9f-4309-bca2-7a6288eba83a
@@ -68,27 +83,23 @@ LumenManufaktur.Kopelevich()
 LumenManufaktur.KM3NeTPMT
 
 # ╔═╡ a196cb83-6423-4360-b335-0c2fa55183b5
-ANTARESPMT = LumenManufaktur.PMTModel(
-	440e-4,
-	λ -> rand()*20,
-	λ -> rand(),
-)
+ANTARESPMT = LumenManufaktur.PMTModel(440e-4, λ -> rand() * 20, λ -> rand())
 
 # ╔═╡ 4d6f0b13-98ea-407a-b23d-23ac47df4a3e
 let
-	fig = Figure(size = (600, 400));
-	ax = Axis(
-		fig[1, 1],
-		xlabel = "distance between muon and PMT / m",
-		ylabel = "npe",
-		xgridstyle = :dash, 
-		ygridstyle = :dash
-	)
-	Rs = range(1, 10, 1000)
-	params = LMParameters(dispersion_model=BaileyDispersion(240))
-	pmt = LumenManufaktur.KM3NeTPMT
-	lines!(ax, Rs, [directlightfrommuon(params, ANTARESPMT, R, π, π/2) for R in Rs])
-	fig
+    fig = Figure(size = (600, 400))
+    ax = Axis(
+        fig[1, 1],
+        xlabel = "distance between muon and PMT / m",
+        ylabel = "npe",
+        xgridstyle = :dash,
+        ygridstyle = :dash,
+    )
+    Rs = range(1, 10, 1000)
+    params = LMParameters(dispersion_model = BaileyDispersion(240))
+    pmt = LumenManufaktur.KM3NeTPMT
+    lines!(ax, Rs, [directlightfrommuon(params, ANTARESPMT, R, π, π / 2) for R in Rs])
+    fig
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001

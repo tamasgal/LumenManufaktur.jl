@@ -34,23 +34,23 @@ end
 @inline function refractionindexgroup(dp::BaileyDispersion, λ)
     n = refractionindexphase(dp, λ)
     y = dispersionphase(dp, λ)
-    n / (1.0 + y*λ/n)
+    n / (1.0 + y * λ / n)
 end
 
 @inline function dispersionphase(dp::BaileyDispersion, λ)
     x = 1.0 / λ
-    -(x^2)*(dp.a2 + x*(2.0*dp.a3 + x*3.0*dp.a4))
+    -(x^2) * (dp.a2 + x * (2.0 * dp.a3 + x * 3.0 * dp.a4))
 end
 
 @inline function dispersiongroup(dp::BaileyDispersion, λ)
     x = 1.0 / λ
 
-    n   = refractionindexphase(dp, λ)
-    np  = dispersionphase(dp, λ)
-    npp = x^3*(2.0*dp.a2 + x*(6.0*dp.a3 + x*12.0*dp.a4))
-    ng  = n / (1.0 + np*λ/n)
+    n = refractionindexphase(dp, λ)
+    np = dispersionphase(dp, λ)
+    npp = x^3 * (2.0 * dp.a2 + x * (6.0 * dp.a3 + x * 12.0 * dp.a4))
+    ng = n / (1.0 + np * λ / n)
 
-    ng^2 * (2*np^2 - n*npp) * λ / (n^3);
+    ng^2 * (2 * np^2 - n * npp) * λ / (n^3)
 end
 
 """
@@ -71,9 +71,9 @@ function wavelength(dp::BaileyDispersion, n, w, eps)
     v = w
 
     while true
-      y = refractionindexgroup(dp, v)
-      abs(y - n) < eps && break
-      v += (n - y) / dispersiongroup(dp, v)
+        y = refractionindexgroup(dp, v)
+        abs(y - n) < eps && break
+        v += (n - y) / dispersiongroup(dp, v)
     end
 
     v

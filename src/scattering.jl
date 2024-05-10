@@ -49,7 +49,7 @@ Model specific function to describe light scattering probability in water (p0007
     g = 0.924
     f = 0.17
 
-    f * rayleigh(x)  +  (1.0 - f) * henyey_greenstein(g, x)
+    f * rayleigh(x) + (1.0 - f) * henyey_greenstein(g, x)
 end
 
 """
@@ -61,7 +61,7 @@ Light scattering probability in water (Heneyey-Greenstein).
 - `x`: cosine scattering angle
 """
 @inline function henyey_greenstein(x)
-    g = 0.924;
+    g = 0.924
     return henyey_greenstein(g, x)
 end
 
@@ -76,9 +76,9 @@ Light scattering probability in water (Heneyey-Greenstein).
 """
 @inline function henyey_greenstein(g, x)
     a0 = (1.0 - g^2) / (4π)
-    y  =  1.0 + g^2 - 2.0*g*x
+    y = 1.0 + g^2 - 2.0 * g * x
 
-    a0 / (y*sqrt(y))
+    a0 / (y * sqrt(y))
 end
 
 """
@@ -101,8 +101,8 @@ Light scattering probability in water (Rayleigh).
 - `x`: cosine scattering angle
 """
 @inline function rayleigh(g, x)
-    a0 = 1.0 / (1.0 + g/3.0) / (4π)
-    a0 * (1.0 + g*x^2)
+    a0 = 1.0 / (1.0 + g / 3.0) / (4π)
+    a0 * (1.0 + g * x^2)
 end
 
 
@@ -119,21 +119,21 @@ Get the inverse of the attenuation length [m^-1].
 
 """
 function inverseattenuationlength(::Scatteringp00075, l_abs, ls, cts)
-    1.0 / l_abs + inverseattenuationlengthinterpolator(cts) / ls;
+    1.0 / l_abs + inverseattenuationlengthinterpolator(cts) / ls
 end
 
 """
 Interpolator for the p00075 model based inverse attenutation calculation.
 """
 const inverseattenuationlengthinterpolator = let
-    xs = range(-1, 1; length=100000)
+    xs = range(-1, 1; length = 100000)
     dx = xs.step.hi
     xs = collect(xs)
     ys = Float64[]
     W = 0.0
     for x in xs
         push!(ys, W)
-        W += 2π * dx * scatteringprobability(Scatteringp00075(), x+0.5*dx)
+        W += 2π * dx * scatteringprobability(Scatteringp00075(), x + 0.5 * dx)
     end
     # xs[1] = 0.0
     # xs[end] = 1.0

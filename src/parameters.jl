@@ -13,7 +13,12 @@ The parameter set for light detection.
 - `scattering_probability_model`: the scattering probability model (default: p00075)
 - `absorption_model`: the absorption model
 """
-Base.@kwdef struct LMParameters{D<:DispersionModel,S<:ScatteringModel,SP<:ScatteringProbabilityModel,A<:AbsorptionModel}
+Base.@kwdef struct LMParameters{
+    D<:DispersionModel,
+    S<:ScatteringModel,
+    SP<:ScatteringProbabilityModel,
+    A<:AbsorptionModel,
+}
     minimum_distance::Float64 = 1.0e-1
     module_radius::Float64 = 0.25
     lambda_min::Float64 = 300.0
