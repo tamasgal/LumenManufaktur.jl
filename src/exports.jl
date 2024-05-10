@@ -2,6 +2,10 @@ export
     directlightfrommuon,
     scatteredlightfrommuon,
     LMParameters,
+    PMTModel,
+    absorptionlength,
+    scatteringlength,
+    scatteringprobability,
     BaileyDispersion,
     DispersionORCA,
     DispersionARCA
