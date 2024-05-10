@@ -1,6 +1,8 @@
 abstract type ScatteringModel end
+abstract type ScatteringProbabilityModel end
 
 struct Kopelevich <: ScatteringModel end
+struct Scatteringp00075 <: ScatteringProbabilityModel end
 
 """
     scatteringlength(λ)
@@ -30,4 +32,111 @@ function scatteringlength(::Kopelevich, λ)
     large_par = bl * Vl * x^0.3
 
     1.0 / (pure_sea + small_par + large_par)
+end
+
+scatteringprobability(::Scatteringp00075, λ) = p00075(λ)
+
+
+"""
+    p00075(x)
+
+Model specific function to describe light scattering probability in water (p00075).
+
+# Arguments
+- `x`: cosine scattering angle
+"""
+@inline function p00075(x)
+    g = 0.924
+    f = 0.17
+
+    f * rayleigh(x)  +  (1.0 - f) * henyey_greenstein(g, x)
+end
+
+"""
+    henyey_greenstein(x)
+
+Light scattering probability in water (Heneyey-Greenstein).
+
+# Arguments
+- `x`: cosine scattering angle
+"""
+@inline function henyey_greenstein(x)
+    g = 0.924;
+    return henyey_greenstein(g, x)
+end
+
+"""
+    henyey_greenstein(g, x)
+
+Light scattering probability in water (Heneyey-Greenstein).
+
+# Arguments
+- `g`: angular dependence parameter
+- `x`: cosine scattering angle
+"""
+@inline function henyey_greenstein(g, x)
+    a0 = (1.0 - g^2) / (4π)
+    y  =  1.0 + g^2 - 2.0*g*x
+
+    a0 / (y*sqrt(y))
+end
+
+"""
+    rayleigh(x)
+
+Light scattering probability in water (Rayleigh).
+
+# Arguments
+- `x`: cosine scattering angle
+"""
+rayleigh(x) = rayleigh(0.835, x)
+
+"""
+    rayleigh(x)
+
+Light scattering probability in water (Rayleigh).
+
+# Arguments
+- `g`: angular dependence parameter
+- `x`: cosine scattering angle
+"""
+@inline function rayleigh(g, x)
+    a0 = 1.0 / (1.0 + g/3.0) / (4π)
+    a0 * (1.0 + g*x^2)
+end
+
+
+"""
+    inverseattenuationlength(::Scatteringp00075, l_abs, ls, cts)
+
+Get the inverse of the attenuation length [m^-1].
+
+# Arguments
+
+- `l_abs`: absorption length [m]
+- `ls`: scattering length [m]
+- `cts`: cosine scattering angle
+
+"""
+function inverseattenuationlength(::Scatteringp00075, l_abs, ls, cts)
+    1.0 / l_abs + inverseattenuationlengthinterpolator(cts) / ls;
+end
+
+"""
+Interpolator for the p00075 model based inverse attenutation calculation.
+"""
+const inverseattenuationlengthinterpolator = let
+    xs = range(-1, 1; length=100000)
+    dx = xs.step.hi
+    xs = collect(xs)
+    ys = Float64[]
+    W = 0.0
+    for x in xs
+        push!(ys, W)
+        W += 2π * dx * scatteringprobability(Scatteringp00075(), x+0.5*dx)
+    end
+    # xs[1] = 0.0
+    # xs[end] = 1.0
+
+    LinearInterpolator(xs, ys, NoBoundaries())
 end

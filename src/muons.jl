@@ -72,6 +72,7 @@ relative to direct Cherenkov light. Returns dP/dt [npe/ns].
 
 # Arguments
 
+- `params`: parameters of the setup
 - `R`: (closest) distance [m] between muon and PMT
 - `ϕ`: zenith angle [rad] which is 0 when the PMT points away from the muon
   track (in x-direction) and rotates counter clockwise to the y-axis when
@@ -152,4 +153,127 @@ function directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt
     end
 
     0.0
+end
+
+"""
+    scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
+
+Probability density function for scattered light from muon. Returns [d^2P/dt/dx].
+
+# Arguments
+- `params`: parameters of the setup
+- `pmt`: PMT model
+- `D`: distance between track segment and PMT [m]
+- `cd`: cosine angle of muon direction and track segment - PMT position
+- `θ`: zenith  angle orientation PMT [rad]
+- `ϕ`: azimuth angle orientation PMT [rad]
+- `Δt`: time difference relative to direct Cherenkov light
+"""
+function scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
+    eps = 1.0e-10
+
+    value = 0
+
+    sd = sqrt((1.0 + cd) * (1.0 - cd))
+    D = max(D, params.minimum_distance)
+    R = sd * D  # minimal distance of approach [m]
+    Z = -cd * D  # photon emission point
+    L = D;
+    t = D * params.n / C + Δt  # time [ns]
+    A = pmt.photocathode_area
+
+    px = sin(θ) * cos(ϕ)
+    py = sin(θ) * sin(ϕ)
+    pz = cos(θ)
+
+
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min);
+
+    ni = C * t / L  # maximal index of refraction
+
+    n0 >= ni && return value
+
+    nj = min(ni, n1)
+
+    w = params.lambda_max
+
+    for (m_x, m_y) in zip(params.legendre_coefficients...)
+
+      ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0);
+      dn = m_y * 0.5 * (nj - n0);
+
+      w = wavelength(params.dispersion_model, ng, w, 1.0e-5);
+
+      dw = dn / abs(dispersiongroup(params.dispersion_model, w))
+
+      n = refractionindexphase(params.dispersion_model, w);
+
+      l_abs = absorptionlength(params.absorption_model, w);
+      ls = scatteringlength(params.scattering_model, w);
+
+      npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w);
+
+      npe <= 0 && continue
+
+      Jc = 1.0 / ls  # dN/dx
+
+      ct0 = 1.0 / n  # photon direction before scattering
+      st0 = sqrt((1.0 + ct0) * (1.0 - ct0))
+
+      d = C * t / ng  # photon path
+
+      cta = cd * ct0 + sd * st0;
+      dca = d - 0.5 * (d + L) * (d - L) / (d - L * cta)
+      tip = -log(L * L / (dca * dca) + eps) / π
+
+      ymin = exp(tip * π);
+      ymax = 1.0;
+
+      for (q_x, q_y) in zip(params.legendre_coefficients...)
+
+        y = 0.5 * (ymax + ymin) + q_x * 0.5 * (ymax - ymin)
+        dy = q_y * 0.5 * (ymax - ymin)
+
+        ϕ = log(y) / tip
+        dp = -dy / (tip * y)
+
+        cp0 = cos(ϕ)
+        sp0 = sin(ϕ)
+
+        u =
+            (R * R + Z * Z - d * d) / (2 * R * st0 * cp0 - 2 * Z * ct0 - 2 * d)
+        v = d - u;
+
+        u <= 0 && continue
+        v <= 0 && continue
+
+        vi = 1.0 / v
+        cts =
+            (R * st0 * cp0 - Z * ct0 - u) * vi  # cosine scattering angle
+
+        V = exp(-d * inverseattenuationlength(params.scattering_probability_model, l_abs, ls, cts))
+
+        cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius && continue
+
+        vx = R - u * st0 * cp0;
+        vy = -u * st0 * sp0;
+        vz = -Z - u * ct0;
+
+        ct = (  # cosine angle of incidence on PMT
+          (vx * px + vy * py + vz * pz) * vi,
+          (vx * px - vy * py + vz * pz) * vi
+        )
+
+        U = pmt.angular_acceptance(ct[1]) + pmt.angular_acceptance(ct[2])  # PMT angular acceptance
+        W = min(A * vi * vi, 2π)  # solid angle
+
+        Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
+        Jd = ng * (1.0 - cts) / C           # dt/du
+
+        value += (npe * dp / (2 * π)) * U * V * W * Ja * Jc / abs(Jd)
+      end
+    end
+
+    return value
 end
