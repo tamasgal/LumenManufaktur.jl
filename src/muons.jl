@@ -33,7 +33,7 @@ and `ϕ` \\[rad\\] (azimuth) with respect to the PMT axis.
   the z-axis
 """
 function directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
-    value = 0
+    value = 0.0
 
     R = max(R, params.minimum_distance)
     A = pmt.photocathode_area
@@ -172,13 +172,13 @@ Probability density function for scattered light from muon. Returns [d^2P/dt/dx]
 function scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
     eps = 1.0e-10
 
-    value = 0
+    value = 0.0
 
     sd = sqrt((1.0 + cd) * (1.0 - cd))
     D = max(D, params.minimum_distance)
     R = sd * D  # minimal distance of approach [m]
     Z = -cd * D  # photon emission point
-    L = D;
+    L = D
     t = D * params.n / C + Δt  # time [ns]
     A = pmt.photocathode_area
 
