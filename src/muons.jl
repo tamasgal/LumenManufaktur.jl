@@ -16,6 +16,23 @@ end
 
 
 """
+    deltayprobability(x)
+
+Emission profile of photons from delta-rays.
+
+Profile is taken from reference ANTARES-SOFT-2002-015, J. Brunner (fig. 3).
+
+Returns the probability.
+
+# Arguments
+- `x`: cosine emission angle
+"""
+function deltayprobability(x)
+    0.188 * exp(-1.25 * abs(x - 0.90)^1.30)
+end
+
+
+"""
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
