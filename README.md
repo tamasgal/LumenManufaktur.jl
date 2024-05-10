@@ -42,26 +42,40 @@ Below are some benchmarks made on a MacBook Air M1 2020.
 ``` julia-repl
 julia> using LumenManufaktur
 
-julia> params = LMParameters(dispersion_model=DispersionARCA)
+julia> params = LMParameters(dispersion_model=BaileyDispersion(240))
 LMParameters:
-  minimum distance = 0.1
-  lambda min/max = 300.0/700.0
+  minimum distance = 0.1 m
+  module_radius = 0.25 m
+  lambda min / max = 300.0 nm / 700.0 nm
   degree of Legendre polynomials = 5
-  dispersion model = BaileyDispersion(350.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
+  dispersion model = BaileyDispersion(240.0, 1.3201, 1.4e-5, 16.2566, -4383.0, 1.1455e6)
   scattering model = LumenManufaktur.Kopelevich()
+  scattering probability model = LumenManufaktur.Scatteringp00075()
   absorption model = LumenManufaktur.DefaultAbsorption()
+  
+julia> @benchmark directlightfrommuon(params, LumenManufaktur.KM3NeTPMT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
+BenchmarkTools.Trial: 10000 samples with 200 evaluations.
+ Range (min … max):  403.125 ns …  2.225 μs  ┊ GC (min … max): 0.00% … 77.28%
+ Time  (median):     422.500 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   428.128 ns ± 29.850 ns  ┊ GC (mean ± σ):  0.08% ±  1.08%
 
-julia> @benchmark directlightfrommuon($params, $LumenManufaktur.PMTKM3NeT, R, θ, ϕ) setup=begin; R=(rand()+1)*300; θ=rand()*2π; ϕ=rand()*2π; end
-BenchmarkTools.Trial: 10000 samples with 198 evaluations.
- Range (min … max):  434.131 ns …  2.985 μs  ┊ GC (min … max): 0.00% … 81.73%
- Time  (median):     445.076 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   451.110 ns ± 59.088 ns  ┊ GC (mean ± σ):  0.28% ±  1.93%
+     ▁ ▁▄▆▆▇█▇▇▆▄▃▃▃▃▃▃▂▂▁▁▁▁▂▂▂▁▁▁                            ▂
+  ▇▅▅█▆██████████████████████████████▇█▆▆▇▇▆▆▆▇▇▆▇▇▆▅▅▅▅▅▄▄▅▅▄ █
+  403 ns        Histogram: log(frequency) by time       507 ns <
 
-       ▆█▂                                                      
-  ▂▃▄▄████▅▄▃▄▃▄▄▄▃▃▂▂▂▂▂▂▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▁▂▂▂▂▁▂▂▂▂▂▂▂ ▃
-  434 ns          Histogram: frequency by time          532 ns <
+ Memory estimate: 64 bytes, allocs estimate: 4.
 
- Memory estimate: 160 bytes, allocs estimate: 5.
+julia> @benchmark scatteredlightfrommuon(params, LumenManufaktur.KM3NeTPMT, D, cd, θ, ϕ, Δt) setup=begin; D=rand(1:100); cd=rand(); θ=rand()*2π; ϕ=rand()*2π; Δt=rand()*100; end
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  4.435 μs …  16.631 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     4.881 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   4.928 μs ± 256.698 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+                  ▅▂▇▅▅█▆▄▅▁▂
+  ▂▁▂▂▂▂▂▃▃▃▄▄▅▇▇████████████▇▆▆▄▄▅▄▄▄▃▄▄▃▄▃▄▃▃▃▃▃▃▃▃▂▃▃▂▂▂▂▂ ▄
+  4.43 μs         Histogram: frequency by time        5.62 μs <
+
+ Memory estimate: 80 bytes, allocs estimate: 5.
 ```
 
 Notice that the allocation estimate for a single call is not accurate, in fact,
