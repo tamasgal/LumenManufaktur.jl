@@ -17,8 +17,6 @@ end
 const KM3NeTPMT = PMTModel(
     45.4e-4,
     # The quantum efficiency includes absorption in glass and gel.
-    # Yields slightly different values compared to the Jpp getQE() function,
-    # very probably due to the interpolation implementation.
     LinearInterpolator(
         [
             0,
