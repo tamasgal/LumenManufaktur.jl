@@ -408,7 +408,7 @@ function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ
 end
 
 """
-    directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
+    scatteredlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
 
 Probability density function for scattered light from delta-rays with a
 closest distance of `R` [m] to the PMT, the angles `θ` \\[rad\\] (zenith) and `ϕ`
