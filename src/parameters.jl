@@ -1,5 +1,5 @@
 struct PDFIntegrationPoints
-    xy::Vector{Tuple{Float64, Float64}}
+    xy::Vector{Tuple{Float64,Float64}}
     function PDFIntegrationPoints(n::Int)
         new([(cos(x), sin(x)) for x = (0.5π/n):(π/n):π])
     end
