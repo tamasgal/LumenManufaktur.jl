@@ -28,10 +28,10 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ,
     n1 = getIndexOfRefractionGroup(wmin);
     ng = C * t / D  # index of refraction
 
-    if (n0 >= ng) {
+    if (n0 >= ng)
       return 0.0;
     end
-    if (n1 <= ng) {
+    if (n1 <= ng)
       return 0.0;
     end
 
@@ -95,7 +95,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
     ni = C * t / L  # maximal index of refraction
 
-    if (n0 >= ni) {
+    if (n0 >= ni)
       return value;
     end
 
@@ -103,7 +103,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
     w = wmax;
 
-    for (const_iterator i = begin(); i != end(); ++i) {
+    for (const_iterator i = begin(); i != end(); ++i)
 
       ng = 0.5 * (nj + n0) + i->getX() * 0.5 * (nj - n0);
       dn = i->getY() * 0.5 * (nj - n0);
@@ -119,7 +119,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
       npe = cherenkov(w, n) * dw * getQE(w);
 
-      if (npe <= 0) {
+      if (npe <= 0)
         continue;
       end
 
@@ -132,7 +132,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
       ds = 2.0 / (size() + 1);
 
-      for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds) {
+      for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds)
 
         for k in (-1, 1)
 
@@ -142,10 +142,10 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
           v = 0.5 * (d + L) * (d - L) / (d - L * cb);
           u = d - v;
 
-          if (u <= 0) {
+          if (u <= 0)
             continue;
           end
-          if (v <= 0) {
+          if (v <= 0)
             continue;
           end
 
@@ -155,7 +155,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
               exp(-d * getInverseAttenuationLength(l_abs, ls, cts));
 
           if (cts < 0.0 &&
-              v * sqrt((1.0 + cts) * (1.0 - cts)) < MODULE_RADIUS_M) {
+              v * sqrt((1.0 + cts) * (1.0 - cts)) < MODULE_RADIUS_M)
             continue;
           end
 
@@ -170,7 +170,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
           dom = dcb * dp * v * v / (u * u);
           dos = sqrt(dom);
 
-          for (const_iterator l = phd.begin(); l != phd.end(); ++l) {
+          for (const_iterator l = phd.begin(); l != phd.end(); ++l)
 
             cp = l->getX();
             sp = l->getY();
@@ -236,63 +236,63 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
     d = sqrt((Z + zmax) * (Z + zmax) + R * R);
 
-    if (C * t > max(n1 * D, zmax + n1 * d)) {
+    if (C * t > max(n1 * D, zmax + n1 * d))
       return value;
     end
 
-    if (C * t < n0 * D) {
+    if (C * t < n0 * D)
 
       JRoot rz(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid) {
+      if (!rz.is_valid)
         return value;
       end
 
-      if (rz.second > Z) {
+      if (rz.second > Z)
         zmin = rz.second - Z;
       end
-      if (rz.first > Z) {
+      if (rz.first > Z)
         zmin = rz.first - Z;
       end
     end
 
-    if (C * t > n1 * D) {
+    if (C * t > n1 * D)
 
       JRoot rz(R, n1, t + Z / C)  # square root
 
-      if (!rz.is_valid) {
+      if (!rz.is_valid)
         return value;
       end
 
-      if (rz.second > Z) {
+      if (rz.second > Z)
         zmin = rz.second - Z;
       end
-      if (rz.first > Z) {
+      if (rz.first > Z)
         zmin = rz.first - Z;
       end
     end
 
-    if (C * t < zmax + n0 * d) {
+    if (C * t < zmax + n0 * d)
 
       JRoot rz(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid) {
+      if (!rz.is_valid)
         return value;
       end
 
-      if (rz.first > Z) {
+      if (rz.first > Z)
         zmax = rz.first - Z;
       end
-      if (rz.second > Z) {
+      if (rz.second > Z)
         zmax = rz.second - Z;
       end
     end
 
-    if (zmin < 0.0) {
+    if (zmin < 0.0)
       zmin = 0.0;
     end
 
-    if (zmax > zmin) {
+    if (zmax > zmin)
 
       ymin = geanz.getIntegral(E, zmin);
       ymax = geanz.getIntegral(E, zmax);
@@ -300,7 +300,7 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
       if dy > 2 * eps()
 
-        for (double y = ymin + 0.5 * dy; y < ymax; y += dy) {
+        for (double y = ymin + 0.5 * dy; y < ymax; y += dy)
 
           z = Z + geanz.getLength(E, y);
           d = sqrt(R * R + z * z);
@@ -347,34 +347,34 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
 
     d = sqrt((Z + zmax) * (Z + zmax) + R * R);
 
-    if (C * t < n0 * D) {
+    if (C * t < n0 * D)
 
       JRoot rz(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid) {
+      if (!rz.is_valid)
         return value;
       end
 
-      if (rz.second > Z) {
+      if (rz.second > Z)
         zmin = rz.second - Z;
       end
-      if (rz.first > Z) {
+      if (rz.first > Z)
         zmin = rz.first - Z;
       end
     end
 
-    if (C * t < zmax + n0 * d) {
+    if (C * t < zmax + n0 * d)
 
       JRoot rz(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid) {
+      if (!rz.is_valid)
         return value;
       end
 
-      if (rz.first > Z) {
+      if (rz.first > Z)
         zmax = rz.first - Z;
       end
-      if (rz.second > Z) {
+      if (rz.second > Z)
         zmax = rz.second - Z;
       end
     end
@@ -383,9 +383,9 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
     ymax = geanz.getIntegral(E, zmax);
     dy = (ymax - ymin) / size();
 
-    if (dy > 2 * eps()) {
+    if (dy > 2 * eps())
 
-      for (double y = ymin + 0.5 * dy; y < ymax; y += dy) {
+      for (double y = ymin + 0.5 * dy; y < ymax; y += dy)
 
         z = Z + geanz.getLength(E, y);
         d = sqrt(R * R + z * z);
