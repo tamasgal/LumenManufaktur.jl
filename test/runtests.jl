@@ -2,8 +2,10 @@ using LumenManufaktur
 using Test
 
 @testset "direct light from muon" begin
-    params =
-        LMParameters(dispersion_model = DispersionORCA, integration_points = PDFIntegrationPoints(5))
+    params = LMParameters(
+        dispersion_model = DispersionORCA,
+        integration_points = PDFIntegrationPoints(5),
+    )
     pmt = LumenManufaktur.KM3NeTPMT
 
     # The relative tolerances are based on comparisons between
