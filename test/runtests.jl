@@ -2,7 +2,8 @@ using LumenManufaktur
 using Test
 
 @testset "direct light from muon" begin
-    params = LMParameters(dispersion_model = DispersionORCA)
+    params =
+        LMParameters(dispersion_model = DispersionORCA, integration_points = PDFIntegrationPoints(5))
     pmt = LumenManufaktur.KM3NeTPMT
 
     # The relative tolerances are based on comparisons between
@@ -35,11 +36,20 @@ using Test
         scatteredlightfrommuon(params, pmt, 2.0, 0.5, π / 2, π, 1.23),
         rtol = 0.000001,
     )
-#
+
     @test isapprox(
         0.00432646,
-        directlightfromdeltarays(params, pmt, 1.5, π/2, π/3, 1.23),
-        rtol = 0.000001
+        directlightfromdeltarays(params, pmt, 1.5, π / 2, π / 3, 1.23),
+        rtol = 0.000001,
     )
-
+    @test isapprox(
+        0.00283604,
+        scatteredlightfromdeltarays(params, pmt, 1.5, π / 2, π / 3, 1.23),
+        rtol = 0.00001,
+    )
+    @test isapprox(
+        0.000202688,
+        scatteredlightfromdeltarays(params, pmt, 2.5, π / 3, π / 4, 2.46),
+        rtol = 0.000001,
+    )
 end

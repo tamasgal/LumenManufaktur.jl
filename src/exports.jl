@@ -4,6 +4,7 @@ export
     directlightfromdeltarays,
     scatteredlightfromdeltarays,
     LMParameters,
+    PDFIntegrationPoints,
     PMTModel,
     absorptionlength,
     scatteringlength,

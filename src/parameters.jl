@@ -1,3 +1,11 @@
+struct PDFIntegrationPoints
+    xy::Vector{Tuple{Float64, Float64}}
+    function PDFIntegrationPoints(n::Int)
+        new([(cos(x), sin(x)) for x = (0.5π/n):(π/n):π])
+    end
+end
+Base.length(p::PDFIntegrationPoints) = length(p.xy)
+
 """
 The parameter set for light detection.
 
@@ -23,6 +31,7 @@ Base.@kwdef struct LMParameters{
     module_radius::Float64 = 0.25
     lambda_min::Float64 = 300.0
     lambda_max::Float64 = 700.0
+    integration_points::PDFIntegrationPoints = PDFIntegrationPoints(20)
     n::Float64 = 1.3800851282
     legendre_coefficients::Tuple{Vector{Float64},Vector{Float64}} = gausslegendre(5)
     dispersion_model::D = BaileyDispersion()
@@ -35,6 +44,7 @@ function Base.show(io::IO, p::LMParameters)
     println(io, "  minimum distance = $(p.minimum_distance) m")
     println(io, "  module_radius = $(p.module_radius) m")
     println(io, "  lambda min / max = $(p.lambda_min) nm / $(p.lambda_max) nm")
+    println(io, "  number of integrations points = $(length(p.integration_points))")
     println(
         io,
         "  degree of Legendre polynomials = $(length(first(p.legendre_coefficients)))",

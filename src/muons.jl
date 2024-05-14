@@ -386,8 +386,8 @@ function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ
 
             d = sqrt(z * z + R * R)  # distance traveled by photon
 
-            ct0 = -z / d;
-            st0 = R / d;
+            ct0 = -z / d
+            st0 = R / d
 
             dz = D / st0  # average track length
             ct = st0 * px + ct0 * pz  # cosine angle of incidence on PMT
@@ -400,171 +400,177 @@ function directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ
             Jd = (1.0 - ng * ct0) / C  # d  t/ dz
             Je = ng * st0 * st0 * st0 / (R * C)  # d^2t/(dz)^2
 
-            value += npe * geanc() * U * V * W * Ja / (abs(Jd) + 0.5 * Je * dz);
+            value += npe * geanc() * U * V * W * Ja / (abs(Jd) + 0.5 * Je * dz)
         end
 
     end
     return value
 end
 
-# /**
-#  * Probability density function for scattered light from delta-rays.
-#  *
-#  * \param  R_m        distance between muon and PMT [m]
-#  * \param  θ      zenith  angle orientation PMT [rad]
-#  * \param  ϕ        azimuth angle orientation PMT [rad]
-#  * \param  Δt       time difference relative to direct Cherenkov light [ns]
-#  * \return            d^2P/dt/dx [npe/ns x m/GeV]
-#  */
-# double getScatteredLightFromDeltaRays(const double R_m, const double θ,
-#                                       const double ϕ,
-#                                       const double Δt) const {
-#   double value = 0;
+"""
+    directlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
 
-#   const double R = std::max(R_m, getRmin());
-#   const double t = R * getTanΘC() / C + Δt; // time [ns]
-#   const double A = pmt.photocathode_area;
+Probability density function for scattered light from delta-rays with a
+closest distance of `R` [m] to the PMT, the angles `θ` \\[rad\\] (zenith) and `ϕ`
+\\[rad\\] (azimuth) with respect to the PMT axis and a time difference `Δt` [ns]
+relative to direct Cherenkov light. Returns d^2P/dt/dE [npe/ns ⋅ m/GeV].
 
-#   const double px = sin(θ) * cos(ϕ);
-#   const double py = sin(θ) * sin(ϕ);
-#   const double pz = cos(θ);
+# Arguments
 
-#   const double n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
-#   const double n1 = refractionindexgroup(params.dispersion_model, params.lambda_min);
-#   const double ni =
-#       sqrt(R * R + C * t * C * t) / R; // maximal index of refraction
+- `params`: parameters of the setup
+- `pmt`: the PMT model
+- `R`: (closest) distance [m] between muon and PMT
+- `ϕ`: zenith angle \\[rad\\] which is 0 when the PMT points away from the muon
+  track (in x-direction) and rotates counter clockwise to the y-axis when
+  viewed from above, while the z-axis points upwards.
+- `θ`: azimuth angle \\[rad\\] which is 0 when the PMT points upwards (along the
+  z-axis) and π/2 when pointing downwards. Between 0 and π/2, the PMT points to
+  the z-axis
+- `Δt`: time difference [ns] relative to the Cherenkov light
+"""
+function scatteredlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
+    value = 0.0
 
-#   if (n0 >= ni) {
-#     return value;
-#   }
+    R = max(R, params.minimum_distance)
+    A = pmt.photocathode_area
+    t = R * tanthetac(params.n) / C + Δt  # time [ns]
 
-#   const double nj = std::min(ni, n1);
+    px = sin(θ) * cos(ϕ)
+    py = sin(θ) * sin(ϕ)
+    pz = cos(θ)
 
-#   double w = params.lambda_max;
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max)
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min)
+    ni = sqrt(R^2 + C^2 * t^2) / R  # maximal index of refraction
 
-#   for (const_iterator i = begin(); i != end(); ++i) {
+    n0 >= ni && return value
 
-#     const double ng = 0.5 * (nj + n0) + i->getX() * 0.5 * (nj - n0);
-#     const double dn = i->getY() * 0.5 * (nj - n0);
+    nj = min(ni, n1)
 
-#     w = getWavelength(ng, w, 1.0e-5);
+    w = params.lambda_max
 
-#     const double dw = dn / fabs(getDispersionGroup(w));
 
-#     const double n = getIndexOfRefractionPhase(w);
+    for (m_x, m_y) in zip(params.legendre_coefficients...)
 
-#     const double l_abs = getAbsorptionLength(w);
-#     const double ls = getScatteringLength(w);
+        ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0)
+        dn = m_y * 0.5 * (nj - n0)
 
-#     const double npe = cherenkov(w, n) * dw * getQE(w);
+        w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
 
-#     if (npe <= 0) {
-#       continue;
-#     }
+        dw = dn / abs(dispersiongroup(params.dispersion_model, w))
 
-#     const double Jc = 1.0 / ls; // dN/dx
+        n = refractionindexphase(params.dispersion_model, w)
 
-#     JRoot rz(R, ng, t); // square root
+        l_abs = absorptionlength(params.absorption_model, w)
+        ls = scatteringlength(params.scattering_model, w)
 
-#     if (!rz.is_valid) {
-#       continue;
-#     }
 
-#     const double zmin = rz.first;
-#     const double zmax = rz.second;
+        npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
 
-#     const double zap = 1.0 / l_abs;
+        npe <= 0 && continue
 
-#     const double xmin = exp(zap * zmax);
-#     const double xmax = exp(zap * zmin);
+        Jc = 1.0 / ls  # dN/dx
 
-#     for (const_iterator j = begin(); j != end(); ++j) {
+        root = Root(R, ng, t)  # square root
 
-#       const double x = 0.5 * (xmax + xmin) + j->getX() * 0.5 * (xmax - xmin);
-#       const double dx = j->getY() * 0.5 * (xmax - xmin);
+        !root.isvalid && continue
 
-#       const double z = log(x) / zap;
-#       const double dz = -dx / (zap * x);
+        zmin = root.most_upstream
+        zmax = root.most_downstream
 
-#       const double D = sqrt(z * z + R * R);
-#       const double cd = -z / D;
-#       const double sd = R / D;
+        zap = 1.0 / l_abs
 
-#       const double qx = cd * px + 0 - sd * pz;
-#       const double qy = 1 * py;
-#       const double qz = sd * px + 0 + cd * pz;
+        xmin = exp(zap * zmax)
+        xmax = exp(zap * zmin)
 
-#       const double d = (C * t - z) / ng; // photon path
+        n_coefficients = length(params.legendre_coefficients[1])
 
-#       // const double V  = exp(-d/l_abs);                         //
-#       // absorption
+        for (p_x, p_y) in zip(params.legendre_coefficients...)
 
-#       const double ds = 2.0 / (size() + 1);
+            x = 0.5 * (xmax + xmin) + p_x * 0.5 * (xmax - xmin)
+            dx = p_y * 0.5 * (xmax - xmin)
 
-#       for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds) {
+            z = log(x) / zap
+            dz = -dx / (zap * x)
 
-#         for (int buffer[] = {-1, +1, 0}, *k = buffer; *k != 0; ++k) {
+            D = sqrt(z^2 + R^2)
+            cd = -z / D
+            sd = R / D
 
-#           const double cb = (*k) * sqrt((1.0 + sb) * (1.0 - sb));
-#           const double dcb = (*k) * ds * sb / cb;
+            qx = cd * px + 0 - sd * pz
+            qy = 1 * py
+            qz = sd * px + 0 + cd * pz
 
-#           const double v = 0.5 * (d + D) * (d - D) / (d - D * cb);
-#           const double u = d - v;
+            d = (C * t - z) / ng  # photon path
 
-#           if (u <= 0) {
-#             continue;
-#           }
-#           if (v <= 0) {
-#             continue;
-#           }
+            ds = 2.0 / (n_coefficients + 1)
 
-#           const double cts = (D * cb - v) / u; // cosine scattering angle
 
-#           const double V =
-#               exp(-d * getInverseAttenuationLength(l_abs, ls, cts));
+            sb = 0.5ds
+            # for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds) {
+            while sb < 1.0 - 0.25ds
 
-#           if (cts < 0.0 &&
-#               v * sqrt((1.0 + cts) * (1.0 - cts)) < MODULE_RADIUS_M) {
-#             continue;
-#           }
+                for k in (-1, 1)
 
-#           const double W = std::min(A / (v * v), 2.0 * PI); // solid angle
-#           const double Ja = getScatteringProbability(cts);  // d^2P/dcos/dϕ
-#           const double Jd = ng * (1.0 - cts) / C;           // dt/du
+                    cb = k * sqrt((1.0 + sb) * (1.0 - sb))
+                    dcb = k * ds * sb / cb
 
-#           const double ca = (D - v * cb) / u;
-#           const double sa = v * sb / u;
+                    v = 0.5 * (d + D) * (d - D) / (d - D * cb)
+                    u = d - v
 
-#           const double dp = PI / phd.size();
-#           const double dom = dcb * dp * v * v / (u * u);
+                    u <= 0 && continue
+                    v <= 0 && continue
 
-#           for (const_iterator l = phd.begin(); l != phd.end(); ++l) {
+                    cts = (D * cb - v) / u  # cosine scattering angle
 
-#             const double cp = l->getX();
-#             const double sp = l->getY();
+                    V = exp(
+                        -d * inverseattenuationlength(
+                            params.scattering_probability_model,
+                            l_abs,
+                            ls,
+                            cts,
+                        ),
+                    )
 
-#             const double ct0 = cd * ca - sd * sa * cp;
+                    cts < 0.0 &&
+                        v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius &&
+                        continue
 
-#             const double vx = sb * cp * qx;
-#             const double vy = sb * sp * qy;
-#             const double vz = cb * qz;
+                    W = min(A / (v * v), 2.0 * π)  # solid angle
+                    Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
+                    Jd = ng * (1.0 - cts) / C  # dt/du
 
-#             const double U =
-#                 pmt.angular_acceptance(vx + vy + vz) +
-#                 pmt.angular_acceptance(vx - vy + vz); // PMT angular acceptance
+                    ca = (D - v * cb) / u
+                    sa = v * sb / u
 
-#             const double Jb = deltarayprobability(ct0); // d^2N/dcos/dϕ
+                    dp = π / length(params.integration_points)
+                    dom = dcb * dp * v^2 / (u^2)
 
-#             value += dom * npe * geanc() * dz * U * V * W * Ja * Jb * Jc /
-#                      fabs(Jd);
-#           }
-#         }
-#       }
-#     }
-#   }
+                    for (cp, sp) in params.integration_points.xy
+                        ct0 = cd * ca - sd * sa * cp
 
-#   return value;
-# }
+                        vx = sb * cp * qx
+                        vy = sb * sp * qy
+                        vz = cb * qz
+
+                        U =
+                            pmt.angular_acceptance(vx + vy + vz) +
+                            pmt.angular_acceptance(vx - vy + vz)  # PMT angular acceptance
+
+                        Jb = deltarayprobability(ct0)  # d^2N/dcos/dϕ
+
+                        value +=
+                            dom * npe * geanc() * dz * U * V * W * Ja * Jb * Jc / abs(Jd)
+                    end
+                end
+                sb += ds
+
+            end
+        end
+    end
+
+    value
+end
 
 """
     Root(R, n, t)
