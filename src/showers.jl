@@ -17,15 +17,15 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ,
     ct0 = cd;
     st0 = sqrt((1.0 + ct0) * (1.0 - ct0));
 
-    D = max(D, getRmin());
-    t = D * getIndexOfRefraction() / C + t_ns  # time [ns]
-    A = getPhotocathodeArea();
+    D = max(D, params.minimum_distance);
+    t = D * params.n / C + Δt  # time [ns]
+    A = pmt.photocathode_area;
 
-    px = sin(theta) * cos(phi);
-    pz = cos(theta);
+    px = sin(θ) * cos(ϕ);
+    pz = cos(θ);
 
-    n0 = getIndexOfRefractionGroup(wmax);
-    n1 = getIndexOfRefractionGroup(wmin);
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min);
     ng = C * t / D  # index of refraction
 
     if (n0 >= ng)
@@ -35,26 +35,26 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ,
       return 0.0;
     end
 
-    w = getWavelength(ng);
-    n = getIndexOfRefractionPhase(w);
+    w = wavelength(params.dispersion_model, ng)
+    n = refractionindexphase(params.dispersion_model, w);
 
-    l_abs = getAbsorptionLength(w);
-    ls = getScatteringLength(w);
+    l_abs = absorptionlength(params.absorption_model, w);
+    ls = scatteringlength(params.scattering_model, w);
 
     npe = cherenkov(w, n) * getQE(w);
 
     ct = st0 * px + ct0 * pz  # cosine angle of incidence on PMT
 
-    U = getAngularAcceptance(ct)  # PMT angular acceptance
+    U = pmt.angular_acceptance(ct)  # PMT angular acceptance
     V = exp(-D / l_abs - D / ls)  # absorption & scattering
     W = A / (D * D)  # solid angle
 
     ngp = getDispersionGroup(w);
 
     Ja = D * ngp / C  # dt/dlambda
-    Jb = geant(n, ct0)  # d^2N/dcos/dphi
+    Jb = geant(n, ct0)  # d^2N/dcos/dϕ
 
-    return npe * geanc() * U * V * W * Jb / fabs(Ja);
+    return npe * geanc() * U * V * W * Jb / abs(Ja);
   end
 
 """
@@ -73,25 +73,25 @@ Probability density function for scattered light from EM-shower. Returns
 - `Δt`: time difference relative to direct Cherenkov light
 """
 function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
-    double value = 0;
+    value = 0.0
 
     sd = sqrt((1.0 + cd) * (1.0 - cd));
-    D = max(D_m, getRmin());
+    D = max(D, params.minimum_distance);
     L = D;
-    t = D * getIndexOfRefraction() / C + t_ns  # time [ns]
+    t = D * params.n / C + Δt  # time [ns]
 
-    A = getPhotocathodeArea();
+    A = pmt.photocathode_area;
 
-    px = sin(theta) * cos(phi);
-    py = sin(theta) * sin(phi);
-    pz = cos(theta);
+    px = sin(θ) * cos(ϕ);
+    py = sin(θ) * sin(ϕ);
+    pz = cos(θ);
 
     qx = cd * px + 0 - sd * pz;
     qy = 1 * py;
     qz = sd * px + 0 + cd * pz;
 
-    n0 = getIndexOfRefractionGroup(wmax);
-    n1 = getIndexOfRefractionGroup(wmin);
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min);
 
     ni = C * t / L  # maximal index of refraction
 
@@ -110,12 +110,12 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
       w = getWavelength(ng, w, 1.0e-5);
 
-      dw = dn / fabs(getDispersionGroup(w));
+      dw = dn / abs(getDispersionGroup(w));
 
-      n = getIndexOfRefractionPhase(w);
+      n = refractionindexphase(params.dispersion_model, w);
 
-      l_abs = getAbsorptionLength(w);
-      ls = getScatteringLength(w);
+      l_abs = absorptionlength(params.absorption_model, w);
+      ls = scatteringlength(params.scattering_model, w);
 
       npe = cherenkov(w, n) * dw * getQE(w);
 
@@ -126,9 +126,6 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
       Jc = 1.0 / ls  # dN/dx
 
       d = C * t / ng  # photon path
-
-      // V  = exp(-d/l_abs)  #
-      // absorption
 
       ds = 2.0 / (size() + 1);
 
@@ -151,29 +148,22 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
           cts = (L * cb - v) / u  # cosine scattering angle
 
-          V =
-              exp(-d * getInverseAttenuationLength(l_abs, ls, cts));
+          V = exp(-d * inverseattenuationlength(params.scattering_probability_model, l_abs, ls, cts));
 
-          if (cts < 0.0 &&
-              v * sqrt((1.0 + cts) * (1.0 - cts)) < MODULE_RADIUS_M)
-            continue;
-          end
+          cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius) && continue
 
           W = min(A / (v * v), 2.0 * PI)  # solid angle
-          Ja = getScatteringProbability(cts)  # d^2P/dcos/dphi
+          Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
           Jd = ng * (1.0 - cts) / C  # dt/du
 
           ca = (L - v * cb) / u;
           sa = v * sb / u;
 
-          dp = PI / phd.size();
+          dp = π / length(params.integration_points)
           dom = dcb * dp * v * v / (u * u);
           dos = sqrt(dom);
 
-          for (const_iterator l = phd.begin(); l != phd.end(); ++l)
-
-            cp = l->getX();
-            sp = l->getY();
+          for (cp, sp) in params.integration_points.xy
 
             ct0 = cd * ca - sd * sa * cp;
 
@@ -182,19 +172,13 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
             vz = cb * qz;
 
             U =
-                getAngularAcceptance(vx + vy + vz) +
-                getAngularAcceptance(vx - vy + vz)  # PMT angular acceptance
-
-            // Jb = geant(n,ct0)  #
-            // d^2N/dcos/dphi
-
-            // value += npe * geanc() * dom * U * V * W * Ja * Jb * Jc /
-            // fabs(Jd);
+                pmt.angular_acceptance(vx + vy + vz) +
+                pmt.angular_acceptance(vx - vy + vz)  # PMT angular acceptance
 
             Jb = geant(n, ct0 - 0.5 * dos,
-                                    ct0 + 0.5 * dos)  # dN/dphi
+                                    ct0 + 0.5 * dos)  # dN/dϕ
 
-            value += npe * geanc() * dos * U * V * W * Ja * Jb * Jc / fabs(Jd);
+            value += npe * geanc() * dos * U * V * W * Ja * Jb * Jc / abs(Jd);
           end
         end
       end
@@ -220,19 +204,19 @@ Probability density function for direct light from EM-shower. Returns
 - `Δt`: time difference relative to direct Cherenkov light
 """
 function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, θ, ϕ, Δt)
-    double value = 0;
+    value = 0.0
 
     sd = sqrt((1.0 + cd) * (1.0 - cd));
-    D = max(D_m, getRmin());
+    D = max(D, params.minimum_distance);
     R = D * sd  # minimal distance of approach [m]
     Z = -D * cd;
-    t = D * getIndexOfRefraction() / C + t_ns  # time [ns]
+    t = D * params.n / C + Δt  # time [ns]
 
-    n0 = getIndexOfRefractionGroup(wmax);
-    n1 = getIndexOfRefractionGroup(wmin);
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min);
 
-    double zmin = 0.0  # minimal shower length [m]
-    double zmax = geanz.getLength(E, 1.0)  # maximal shower length [m]
+    zmin = 0.0  # minimal shower length [m]
+    zmax = geanz.getLength(E, 1.0)  # maximal shower length [m]
 
     d = sqrt((Z + zmax) * (Z + zmax) + R * R);
 
@@ -241,34 +225,26 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
     end
 
     if (C * t < n0 * D)
-
-      JRoot rz(R, n0, t + Z / C)  # square root
-
-      if (!rz.is_valid)
-        return value;
+      root = Root(R, n0, t + Z / C)  # square root
+      !root.isvalid && return value
+      if root.most_downstream > Z
+        zmin = root.most_downstream - Z;
       end
-
-      if (rz.second > Z)
-        zmin = rz.second - Z;
-      end
-      if (rz.first > Z)
+      if root.most_upstream > Z
         zmin = rz.first - Z;
       end
     end
 
     if (C * t > n1 * D)
+      root = Root(R, n1, t + Z / C)  # square root
 
-      JRoot rz(R, n1, t + Z / C)  # square root
+      !rz.is_valid && return value
 
-      if (!rz.is_valid)
-        return value;
+      if (root.most_downstream > Z)
+        zmin = root.most_downstream - Z;
       end
-
-      if (rz.second > Z)
-        zmin = rz.second - Z;
-      end
-      if (rz.first > Z)
-        zmin = rz.first - Z;
+      if (root.most_upstream > Z)
+        zmin = root.most_upwnstream - Z;
       end
     end
 
@@ -304,10 +280,9 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
           z = Z + geanz.getLength(E, y);
           d = sqrt(R * R + z * z);
-          t1 = t + (Z - z) / C - d * getIndexOfRefraction() / C;
+          t1 = t + (Z - z) / C - d * params.n / C;
 
-          value +=
-              dy * E * getDirectLightFromEMshower(d, -z / d, theta, phi, t1);
+          value += dy * E * directlightfromEMshower(params, pmt, d, -z / d, θ, ϕ, t1);
         end
       end
     end
@@ -335,12 +310,12 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
     value = 0.0
 
     sd = sqrt((1.0 + cd) * (1.0 - cd));
-    D = max(D_m, getRmin());
+    D = max(D, params.minimum_distance);
     R = D * sd  # minimal distance of approach [m]
     Z = -D * cd;
-    t = D * getIndexOfRefraction() / C + t_ns  # time [ns]
+    t = D * params.n / C + Δt  # time [ns]
 
-    n0 = getIndexOfRefractionGroup(wmax);
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max);
 
     zmin = 0.0  # minimal shower length [m]
     zmax = geanz.getLength(E, 1.0)  # maximal shower length [m]
@@ -389,10 +364,9 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
 
         z = Z + geanz.getLength(E, y);
         d = sqrt(R * R + z * z);
-        t1 = t + (Z - z) / C - d * getIndexOfRefraction() / C;
+        t1 = t + (Z - z) / C - d * params.n / C;
 
-        value +=
-            dy * E * getScatteredLightFromEMshower(d, -z / d, theta, phi, t1);
+        value += dy * E * scatteredlightfromEMshower(params, pmt, d, -z / d, θ, ϕ, t1);
       end
     end
 
