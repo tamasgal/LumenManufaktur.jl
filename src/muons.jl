@@ -178,8 +178,8 @@ Probability density function for scattered light from muon. Returns [d^2P/dt/dx]
 - `pmt`: PMT model
 - `D`: distance between track segment and PMT [m]
 - `cd`: cosine angle of muon direction and track segment - PMT position
-- `θ`: zenith  angle orientation PMT \\[rad\\]
-- `ϕ`: azimuth angle orientation PMT \\[rad\\]
+- `θ`: zenith  angle orientation PMT [rad]
+- `ϕ`: azimuth angle orientation PMT [rad]
 - `Δt`: time difference relative to direct Cherenkov light
 """
 function scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
