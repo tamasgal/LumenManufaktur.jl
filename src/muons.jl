@@ -505,9 +505,7 @@ function scatteredlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ,
 
             ds = 2.0 / (n_coefficients + 1)
 
-
             sb = 0.5ds
-            # for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds) {
             while sb < 1.0 - 0.25ds
 
                 for k in (-1, 1)
