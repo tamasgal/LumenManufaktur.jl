@@ -103,10 +103,12 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
     w = wmax;
 
-    for (const_iterator i = begin(); i != end(); ++i)
+    n_coefficients = length(params.legendre_coefficients[1])
 
-      ng = 0.5 * (nj + n0) + i->getX() * 0.5 * (nj - n0);
-      dn = i->getY() * 0.5 * (nj - n0);
+    for (m_x, m_y) in zip(params.legendre_coefficients...)
+
+      ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0);
+      dn = m_y * 0.5 * (nj - n0);
 
       w = getWavelength(ng, w, 1.0e-5);
 
@@ -127,9 +129,10 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
       d = C * t / ng  # photon path
 
-      ds = 2.0 / (size() + 1);
+      ds = 2.0 / (n_coefficients + 1);
 
-      for (double sb = 0.5 * ds; sb < 1.0 - 0.25 * ds; sb += ds)
+      sb = 0.5ds
+      while sb < 1.0 - 0.25ds
 
         for k in (-1, 1)
 
@@ -150,7 +153,7 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
           V = exp(-d * inverseattenuationlength(params.scattering_probability_model, l_abs, ls, cts));
 
-          cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius) && continue
+          cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius && continue
 
           W = min(A / (v * v), 2.0 * PI)  # solid angle
           Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
@@ -175,12 +178,12 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
                 pmt.angular_acceptance(vx + vy + vz) +
                 pmt.angular_acceptance(vx - vy + vz)  # PMT angular acceptance
 
-            Jb = geant(n, ct0 - 0.5 * dos,
-                                    ct0 + 0.5 * dos)  # dN/dϕ
+            Jb = geant(n, ct0 - 0.5 * dos, ct0 + 0.5 * dos)  # dN/dϕ
 
             value += npe * geanc() * dos * U * V * W * Ja * Jb * Jc / abs(Jd);
           end
         end
+        sb += ds
       end
     end
 
@@ -231,14 +234,14 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
         zmin = root.most_downstream - Z;
       end
       if root.most_upstream > Z
-        zmin = rz.first - Z;
+        zmin = root.most_upstream - Z;
       end
     end
 
     if (C * t > n1 * D)
       root = Root(R, n1, t + Z / C)  # square root
 
-      !rz.is_valid && return value
+      !root.isvalid && return value
 
       if (root.most_downstream > Z)
         zmin = root.most_downstream - Z;
@@ -250,17 +253,15 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
     if (C * t < zmax + n0 * d)
 
-      JRoot rz(R, n0, t + Z / C)  # square root
+      root = Root(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid)
-        return value;
-      end
+      !root.isvalid && return value
 
-      if (rz.first > Z)
-        zmax = rz.first - Z;
+      if (root.most_upstream > Z)
+        zmax = root.most_upstream - Z;
       end
-      if (rz.second > Z)
-        zmax = rz.second - Z;
+      if (root.most_downstream > Z)
+        zmax = root.most_downstream - Z;
       end
     end
 
@@ -276,14 +277,14 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
       if dy > 2 * eps()
 
-        for (double y = ymin + 0.5 * dy; y < ymax; y += dy)
+        # for (double y = ymin + 0.5 * dy; y < ymax; y += dy)
 
-          z = Z + geanz.getLength(E, y);
-          d = sqrt(R * R + z * z);
-          t1 = t + (Z - z) / C - d * params.n / C;
+        #   z = Z + geanz.getLength(E, y);
+        #   d = sqrt(R * R + z * z);
+        #   t1 = t + (Z - z) / C - d * params.n / C;
 
-          value += dy * E * directlightfromEMshower(params, pmt, d, -z / d, θ, ϕ, t1);
-        end
+        #   value += dy * E * directlightfromEMshower(params, pmt, d, -z / d, θ, ϕ, t1);
+        # end
       end
     end
 
@@ -324,33 +325,29 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
 
     if (C * t < n0 * D)
 
-      JRoot rz(R, n0, t + Z / C)  # square root
+      root = Root(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid)
-        return value;
-      end
+      !root.isvalid && return value
 
-      if (rz.second > Z)
-        zmin = rz.second - Z;
+      if (root.most_downstream > Z)
+        zmin = root.most_downstream - Z;
       end
-      if (rz.first > Z)
-        zmin = rz.first - Z;
+      if (root.most_upstream > Z)
+        zmin = root.most_upstream - Z;
       end
     end
 
     if (C * t < zmax + n0 * d)
 
-      JRoot rz(R, n0, t + Z / C)  # square root
+      root = Root(R, n0, t + Z / C)  # square root
 
-      if (!rz.is_valid)
-        return value;
-      end
+      !root.isvalid && return value
 
-      if (rz.first > Z)
-        zmax = rz.first - Z;
+      if (root.most_upstream > Z)
+        zmax = root.most_upstream - Z;
       end
-      if (rz.second > Z)
-        zmax = rz.second - Z;
+      if (root.most_downstream > Z)
+        zmax = root.most_downstream - Z;
       end
     end
 
