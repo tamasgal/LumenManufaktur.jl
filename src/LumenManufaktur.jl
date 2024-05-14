@@ -12,7 +12,9 @@ include("scattering.jl")
 include("absorption.jl")
 include("pmt.jl")
 include("parameters.jl")
+include("utils.jl")
 include("muons.jl")
+include("deltarays.jl")
 include("exports.jl")
 
 end
