@@ -41,7 +41,7 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ,
     l_abs = absorptionlength(params.absorption_model, w)
     ls = scatteringlength(params.scattering_model, w)
 
-    npe = cherenkov(w, n) * getQE(w)
+    npe = cherenkov(w, n) * pmt.quantum_efficiency_(w)
 
     ct = st0 * px + ct0 * pz  # cosine angle of incidence on PMT
 
@@ -49,7 +49,7 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ,
     V = exp(-D / l_abs - D / ls)  # absorption & scattering
     W = A / (D * D)  # solid angle
 
-    ngp = getDispersionGroup(w)
+    ngp = dispersiongroup(params.dispersion_model, w)
 
     Ja = D * ngp / C  # dt/dlambda
     Jb = geant(n, ct0)  # d^2N/dcos/dϕ
@@ -112,14 +112,14 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, 
 
         w = getWavelength(ng, w, 1.0e-5)
 
-        dw = dn / abs(getDispersionGroup(w))
+        dw = dn / abs(dispersiongroup(params.dispersion_model, w))
 
         n = refractionindexphase(params.dispersion_model, w)
 
         l_abs = absorptionlength(params.absorption_model, w)
         ls = scatteringlength(params.scattering_model, w)
 
-        npe = cherenkov(w, n) * dw * getQE(w)
+        npe = cherenkov(w, n) * dw * pmt.quantum_efficiency_(w)
 
         if (npe <= 0)
             continue
