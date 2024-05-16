@@ -5,7 +5,20 @@
 [![Build Status](https://git.km3net.de/tgal/LumenManufaktur.jl/badges/main/pipeline.svg)](https://git.km3net.de/tgal/LumenManufaktur.jl/pipelines)
 [![Coverage](https://git.km3net.de/tgal/LumenManufaktur.jl/badges/main/coverage.svg)](https://git.km3net.de/tgal/LumenManufaktur.jl/commits/main)
 
-Welcome to the `LumenManufaktur.jl` repository!
+`LumenManufaktur.jl` is a software package written in Julia with the aim of
+providing high-performance routines to calculate probability density functions
+of the arrival time of light on PMTs induced by muons and showers including
+production (Cherenkov radiation, photons from energy loss of a muon, shower
+light), transmission (dispersion, absorption and scattering) and detection
+(angular acceptance, quantum efficiency, shadowing) of light with a PMT.
+
+The software is written in a way that allows the user to plug in their own models for dispersion, absorption, scattering and also for the quantum efficiency and angular acceptance of PMTs.
+
+The implementation is based on the C++ framework `Jpp` developed by Maarten de
+Jong for the KM3NeT neutrino telescope. More details about the underlying
+physics and models can be found in ["The probability density function of the
+arrival time of Čerenkov light", M. de Jong, E. van Campenhout, arXiv:2305.19626
+[astro-ph.IM]](https://arxiv.org/abs/2305.19626).
 
 
 ## Documentation
