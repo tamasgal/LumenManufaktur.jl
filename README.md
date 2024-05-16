@@ -16,8 +16,8 @@ The software is written in a way that allows the user to plug in their own model
 
 The implementation is based on the C++ framework `Jpp` developed by Maarten de
 Jong for the KM3NeT neutrino telescope. More details about the underlying
-physics and models can be found in ["The probability density function of the
-arrival time of Čerenkov light", M. de Jong, E. van Campenhout, arXiv:2305.19626
+physics and models can be found in **"The probability density function of the
+arrival time of Čerenkov light", M. de Jong, E. van Campenhout** [arXiv:2305.19626
 [astro-ph.IM]](https://arxiv.org/abs/2305.19626).
 
 
