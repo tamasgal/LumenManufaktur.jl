@@ -1,3 +1,94 @@
+ # /**
+ #   * Probability density function for direct light from EM-showers.
+ #   *
+ #   * \param  R_m        distance between muon and PMT [m]
+ #   * \param  theta      zenith  angle orientation PMT [rad]
+ #   * \param  phi        azimuth angle orientation PMT [rad]
+ #   * \param  t_ns       time difference relative to direct Cherenkov light [ns]
+ #   * \return            dP/dt [npe/ns/GeV]
+ #   */
+ #  double getDirectLightFromEMshowers(const double R_m, const double theta,
+ #                                     const double phi,
+ #                                     const double t_ns) const {
+ #    double value = 0;
+
+ #    const double R = std::max(R_m, getRmin());
+ #    const double t = R * getTanThetaC() / C + t_ns; // time [ns]
+ #    const double A = getPhotocathodeArea();
+ #    const double D = 2.0 * sqrt(A / PI);
+
+ #    const double px = sin(theta) * cos(phi);
+ #    // const double py =  sin(theta)*sin(phi);
+ #    const double pz = cos(theta);
+
+ #    const double n0 = getIndexOfRefractionGroup(wmax);
+ #    const double n1 = getIndexOfRefractionGroup(wmin);
+ #    const double ni =
+ #        sqrt(R * R + C * t * C * t) / R; // maximal index of refraction
+
+ #    if (n0 >= ni) {
+ #      return value;
+ #    }
+
+ #    const double nj = std::min(n1, ni);
+
+ #    double w = wmax;
+
+ #    for (const_iterator i = begin(); i != end(); ++i) {
+
+ #      const double ng = 0.5 * (nj + n0) + i->getX() * 0.5 * (nj - n0);
+ #      const double dn = i->getY() * 0.5 * (nj - n0);
+
+ #      w = getWavelength(ng, w, 1.0e-5);
+
+ #      const double dw = dn / fabs(getDispersionGroup(w));
+
+ #      const double n = getIndexOfRefractionPhase(w);
+
+ #      const double l_abs = getAbsorptionLength(w);
+ #      const double ls = getScatteringLength(w);
+
+ #      const double npe = cherenkov(w, n) * dw * getQE(w);
+
+ #      JRoot rz(R, ng, t); // square root
+
+ #      if (!rz.is_valid) {
+ #        continue;
+ #      }
+
+ #      for (int j = 0; j != 2; ++j) {
+
+ #        const double z = rz[j];
+
+ #        if (C * t <= z)
+ #          continue;
+
+ #        const double d = sqrt(z * z + R * R); // distance traveled by photon
+
+ #        const double ct0 = -z / d;
+ #        const double st0 = R / d;
+
+ #        const double dz = D / st0; // average track length
+
+ #        const double ct =
+ #            st0 * px + ct0 * pz; // cosine angle of incidence on PMT
+
+ #        const double U = getAngularAcceptance(ct); // PMT angular acceptance
+ #        const double V = exp(-d / l_abs - d / ls); // absorption & scattering
+ #        const double W = A / (d * d);              // solid angle
+
+ #        const double Ja = geant(n, ct0);                  // d^2N/dcos/dphi
+ #        const double Jd = (1.0 - ng * ct0) / C;           // d  t/ dz
+ #        const double Je = ng * st0 * st0 * st0 / (R * C); // d^2t/(dz)^2
+
+ #        value += gWater() * npe * U * V * W * Ja / (fabs(Jd) + 0.5 * Je * dz);
+ #      }
+ #    }
+
+ #    return value;
+ #  }
+
+
 """
     directlightfromEMshower(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)
 
