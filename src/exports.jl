@@ -6,6 +6,7 @@ export
     LMParameters,
     PDFIntegrationPoints,
     PMTModel,
+    EMShowerCorrection,
     absorptionlength,
     scatteringlength,
     scatteringprobability,
