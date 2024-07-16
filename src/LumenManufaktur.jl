@@ -14,6 +14,7 @@ include("pmt.jl")
 include("parameters.jl")
 include("utils.jl")
 include("muons.jl")
+include("showers.jl")
 include("deltarays.jl")
 include("exports.jl")
 

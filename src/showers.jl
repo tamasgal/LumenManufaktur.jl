@@ -10,12 +10,13 @@ struct EMShowerCorrection{D<:DispersionModel}
     dispersion_model::D
     f1
     f2
-    function EMShowerCorrection(dispersion_model::DispersionMdoel; lambda_min=300, lambda_max=700, nx=10000)
+    function EMShowerCorrection(dispersion_model::DispersionModel; lambda_min=300, lambda_max=700, nx=10000)
         xmin = 1.0 / lambda_max
         xmax = 1.0 / lambda_min
         value = 0.0
 
-        for x in xmin:(xmax-xmin)/nx:xmax
+        dx = (xmax-xmin)/nx
+        for x in xmin:dx:xmax
 
             w  = 1.0 / x
             dw = dx * w*w
@@ -64,7 +65,7 @@ struct EMShowerCorrection{D<:DispersionModel}
             WeakBoundaries(),
         )
 
-        return new(lambda_min, lambda_max, nx, dispersion_model, f1, f2)
+        return new{typeof(dispersion_model)}(lambda_min, lambda_max, nx, dispersion_model, f1, f2)
     end
 end
 
