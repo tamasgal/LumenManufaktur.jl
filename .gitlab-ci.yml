@@ -62,9 +62,16 @@ Julia 1.10:
     - .script
     - .coverage
 
+Julia 1.11:
+  image: git.km3net.de:4567/common/dockerfiles/base/julia:1.11
+  stage: test
+  extends:
+    - .script
+    - .coverage
+
 
 docs:
-  image: git.km3net.de:4567/common/dockerfiles/base/julia:1.10-tex
+  image: git.km3net.de:4567/common/dockerfiles/base/julia:1.11-tex
   stage: docs
   script:
     - |
@@ -78,6 +85,8 @@ docs:
         Pkg.update()
         Pkg.develop(PackageSpec(path=pwd()))
         Pkg.instantiate()
+        # See https://github.com/JuliaDocs/Documenter.jl/issues/2698
+        Pkg.add(name="OpenSSL_jll", version="3.0")
         using Documenter: doctest
         using LumenManufaktur
         doctest(LumenManufaktur)
