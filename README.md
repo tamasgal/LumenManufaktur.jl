@@ -1,9 +1,9 @@
 # LumenManufaktur
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://tgal.pages.km3net.de/LumenManufaktur.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://tgal.pages.km3net.de/LumenManufaktur.jl/dev)
-[![Build Status](https://git.km3net.de/tgal/LumenManufaktur.jl/badges/main/pipeline.svg)](https://git.km3net.de/tgal/LumenManufaktur.jl/pipelines)
-[![Coverage](https://git.km3net.de/tgal/LumenManufaktur.jl/badges/main/coverage.svg)](https://git.km3net.de/tgal/LumenManufaktur.jl/commits/main)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://simulation.pages.km3net.de/LumenManufaktur.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://simulation.pages.km3net.de/LumenManufaktur.jl/dev)
+[![Build Status](https://git.km3net.de/simulation/LumenManufaktur.jl/badges/main/pipeline.svg)](https://git.km3net.de/simulation/LumenManufaktur.jl/pipelines)
+[![Coverage](https://git.km3net.de/simulation/LumenManufaktur.jl/badges/main/coverage.svg)](https://git.km3net.de/simulation/LumenManufaktur.jl/commits/main)
 
 `LumenManufaktur.jl` is a software package written in Julia with the aim of
 providing high-performance routines to calculate probability density functions
