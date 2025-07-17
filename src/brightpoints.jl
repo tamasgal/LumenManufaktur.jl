@@ -81,7 +81,7 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
 
     nj = min(ni, n1)
 
-    w = wmax
+    w = params.lambda_max
 
     n_coefficients = length(params.legendre_coefficients[1])
 
