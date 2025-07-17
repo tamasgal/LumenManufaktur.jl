@@ -90,7 +90,7 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
         ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0)
         dn = m_y * 0.5 * (nj - n0)
 
-        w = getWavelength(ng, w, 1.0e-5)
+        w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
 
         dw = dn / abs(dispersiongroup(params.dispersion_model, w))
 
