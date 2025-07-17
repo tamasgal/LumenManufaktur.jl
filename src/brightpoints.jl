@@ -28,7 +28,7 @@ function directlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, ct, 
         return 0.0
     end
 
-    w = wavelength(params.dispersion_model, ng)
+    w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
     n = refractionindexphase(params.dispersion_model, w)
 
     l_abs = absorptionlength(params.absorption_model, w)
