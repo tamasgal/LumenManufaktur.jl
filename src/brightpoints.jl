@@ -96,7 +96,7 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
 
         n = refractionindexphase(params.dispersion_model, w)
 
-        npe = cherenkov(w, n) * dw * pmt.quantum_efficiency_(w)
+        npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
         
         if (npe <= 0)
             continue
