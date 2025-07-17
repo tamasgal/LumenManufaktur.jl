@@ -34,7 +34,7 @@ function directlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, ct, 
     l_abs = absorptionlength(params.absorption_model, w)
     ls = scatteringlength(params.scattering_model, w)
 
-    npe = cherenkov(w, n) * pmt.quantum_efficiency_(w)
+    npe = cherenkov(w, n) * pmt.quantum_efficiency(w)
 
     U = pmt.angular_acceptance(ct)  # PMT angular acceptance
     V = exp(-D / l_abs - D / ls)  # absorption & scattering
