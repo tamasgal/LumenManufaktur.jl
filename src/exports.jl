@@ -3,6 +3,8 @@ export
     scatteredlightfrommuon,
     directlightfromdeltarays,
     scatteredlightfromdeltarays,
+    directlightfrombrightpoint
+    scatteredlightfrombrightpoint 
     LMParameters,
     PDFIntegrationPoints,
     PMTModel,
