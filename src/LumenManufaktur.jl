@@ -15,6 +15,7 @@ include("parameters.jl")
 include("utils.jl")
 include("muons.jl")
 include("deltarays.jl")
+include("brightpoints.jl")
 include("exports.jl")
 
 end
