@@ -23,7 +23,7 @@ arrival time of Čerenkov light", M. de Jong, E. van Campenhout** [arXiv:2305.19
 
 ## Documentation
 
-Check out the **[Latest Documention](https://tgal.pages.km3net.de/LumenManufaktur.jl/dev)**
+Check out the **[Latest Documention](https://simulation.pages.km3net.de/LumenManufaktur.jl)**
 which also includes tutorials and examples.
 
 
