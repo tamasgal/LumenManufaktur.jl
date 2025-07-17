@@ -145,7 +145,7 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
                     v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius &&
                     continue
 
-                W = min(A / (v * v), 2.0 * PI)  # solid angle
+                W = min(A / (v * v), 2.0 * π)  # solid angle
                 Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
                 Jd = ng * (1.0 - cts) / C  # dt/du
 
