@@ -1,4 +1,5 @@
 using LumenManufaktur
+using DelimitedFiles
 using Test
 
 @testset "direct light from muon" begin
@@ -54,4 +55,27 @@ using Test
     #     scatteredlightfromdeltarays(params, pmt, 2.5, π / 3, π / 4, 2.46),
     #     rtol = 0.000001,
     # )
+end
+
+@testset "brightpoint" begin
+    params = LMParameters(
+        dispersion_model = DispersionORCA,
+        integration_points = PDFIntegrationPoints(5),
+    )
+    pmt = LumenManufaktur.KM3NeTPMT
+
+    data, header = readdlm(
+        "brightpoint_Jpp_b96333ed0e136855e359ca515ea61c0138b5b43c.csv",
+        ',',
+        Float64,
+        '\n'; header=true
+    )
+
+
+    for row in eachrow(data)
+        dl = LumenManufaktur.directlightfrombrightpoint(params, pmt, row[1], row[2], row[3])
+        sl = LumenManufaktur.scatteredlightfrombrightpoint(params, pmt, row[1], row[2], row[3])
+        @test row[4] ≈ dl
+        @test row[5] ≈ sl
+    end
 end

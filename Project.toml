@@ -1,19 +1,21 @@
 name = "LumenManufaktur"
 uuid = "a63c60df-84c5-40dc-bdf1-cfe657ef319c"
-authors = ["Tamas Gal"]
 version = "0.5.2"
+authors = ["Tamas Gal"]
 
 [deps]
 BasicInterpolators = "26cce99e-4866-4b6d-ab74-862489e035e0"
 FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
 
 [compat]
-julia = "1"
 BasicInterpolators = "^0.7"
+DelimitedFiles = "1.9.1"
 FastGaussQuadrature = "^1"
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [targets]
-test = ["Test"]
+test = ["Test", "DelimitedFiles"]
