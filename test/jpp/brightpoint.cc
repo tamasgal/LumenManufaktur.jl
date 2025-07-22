@@ -44,6 +44,8 @@ int main(int argc, char **argv)
       numberOfPoints,
       epsilon);
 
+  double npe;
+
   std::cout << "R_m,cos_theta,delta_t,dlbright,slbright" << std::endl;
   for (double R_m = 0.4; R_m < 100; R_m *= 2) {
     for (double cos_theta = -1; cos_theta < 1; cos_theta += 0.2) {
