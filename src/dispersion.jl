@@ -91,7 +91,7 @@ group velocity.
 - `eps`: precision index of refraction
 
 """
-function wavelength(params::LMParameters, n; eps=1.0e-10)
+function wavelength(params, n; eps=1.0e-10)
 
     vmin = params.lambda_min;
     vmax = params.lambda_max;
