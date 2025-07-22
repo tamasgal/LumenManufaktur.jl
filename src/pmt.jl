@@ -15,7 +15,7 @@ struct PMTModel{T1,T2}
 end
 
 const KM3NeTPMT = PMTModel(
-    45.4e-4,
+    π * (0.5*3.0*2.54)^2 * 1.0e-4,  # photo-cathode area [m^2]
     # The quantum efficiency includes absorption in glass and gel.
     LinearInterpolator(
         [
@@ -112,9 +112,9 @@ const KM3NeTPMT = PMTModel(
             999999,
         ],
 
-        # collection efficiency (with factor 0.9) correction
+        # collection efficiency (was once with factor 0.9, now 1.0) correction
         0.01 *
-        0.9 *
+        1.00 *
         [
             0.0,
             0.0,
