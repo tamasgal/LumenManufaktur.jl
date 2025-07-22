@@ -65,7 +65,7 @@ end
     pmt = LumenManufaktur.KM3NeTPMT
 
     data, header = readdlm(
-        "brightpoint_Jpp_b96333ed0e136855e359ca515ea61c0138b5b43c.csv",
+        "jpp/brightpoint_Jpp_b96333ed0e136855e359ca515ea61c0138b5b43c.csv",
         ',',
         Float64,
         '\n'; header=true
