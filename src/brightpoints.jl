@@ -65,22 +65,15 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
     value = 0.0
 
     D = max(D, params.minimum_distance)
-    # @show D
     t = D * params.n / C + Δt  # time [ns]
-    # @show t
     st = sqrt((1.0 + ct) * (1.0 - ct))
-    # @show st
 
     A = pmt.photocathode_area
-    # @show A
 
     n0 = refractionindexgroup(params.dispersion_model, params.lambda_max)
-    # @show n0
     n1 = refractionindexgroup(params.dispersion_model, params.lambda_min)
-    # @show n1
 
     ni = C * t / D  # maximal index of refraction
-    # @show ni
 
     n0 >= ni && return value
 
@@ -90,28 +83,18 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
 
     n_coefficients = length(params.legendre_coefficients[1])
 
-    # println("------------")
     for (m_x, m_y) in zip(params.legendre_coefficients...)
-        # @show m_x
-        # @show m_y
-
         ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0)
-        # @show ng
         dn = m_y * 0.5 * (nj - n0)
-        # @show dn
 
         w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
-        # @show w
 
         dw = dn / abs(dispersiongroup(params.dispersion_model, w))
-        # @show dw
 
         n = refractionindexphase(params.dispersion_model, w)
-        # @show n
 
         npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
-        # @show npe
-        
+
         npe <= 0 && continue
 
         l_abs = absorptionlength(params.absorption_model, w)
@@ -147,10 +130,6 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
             )
 
             if cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius
-
-                # println("###################")
-                # println(" -> continue in k")
-                # println("###################")
                 continue
             end
 
@@ -161,25 +140,11 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
             dp = π / length(params.integration_points)
             dom = dcb * dp * v * v / (u * u)
 
-            # println("* * * * * *")
-            # @show dp
-            # @show cb
-            # @show dom
-            # @show ct
-            # @show sb
-            # @show st
             for (cp, sp) in params.integration_points.xy
-                # println(" . . . . .")
-                # @show cp
-
                 dot = cb * ct + sb * cp * st
-                # @show dot
 
                 U = 2 * pmt.angular_acceptance(dot)  # PMT angular acceptance
-                # @show U
-
                 value += npe * geanc() * dom * U * V * W * Ja * Jb * Jc / abs(Jd)
-                # @show value
             end
         end
     end
