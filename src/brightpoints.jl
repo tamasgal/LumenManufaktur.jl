@@ -64,20 +64,25 @@ Probability density function for scattered light from an isotropic light source.
 function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, ct, Δt)
     value = 0.0
 
-    st = sqrt((1.0 + ct) * (1.0 - ct))
     D = max(D, params.minimum_distance)
+    # @show D
     t = D * params.n / C + Δt  # time [ns]
+    # @show t
+    st = sqrt((1.0 + ct) * (1.0 - ct))
+    # @show st
 
     A = pmt.photocathode_area
+    # @show A
 
     n0 = refractionindexgroup(params.dispersion_model, params.lambda_max)
+    # @show n0
     n1 = refractionindexgroup(params.dispersion_model, params.lambda_min)
+    # @show n1
 
     ni = C * t / D  # maximal index of refraction
+    # @show ni
 
-    if (n0 >= ni)
-        return value
-    end
+    n0 >= ni && return value
 
     nj = min(ni, n1)
 
@@ -85,23 +90,30 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
 
     n_coefficients = length(params.legendre_coefficients[1])
 
+    # println("------------")
     for (m_x, m_y) in zip(params.legendre_coefficients...)
+        # @show m_x
+        # @show m_y
 
         ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0)
+        # @show ng
         dn = m_y * 0.5 * (nj - n0)
+        # @show dn
 
         w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
+        # @show w
 
         dw = dn / abs(dispersiongroup(params.dispersion_model, w))
+        # @show dw
 
         n = refractionindexphase(params.dispersion_model, w)
+        # @show n
 
         npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
+        # @show npe
         
-        if (npe <= 0)
-            continue
-        end
-        
+        npe <= 0 && continue
+
         l_abs = absorptionlength(params.absorption_model, w)
         ls = scatteringlength(params.scattering_model, w)
 
@@ -110,58 +122,65 @@ function scatteredlightfrombrightpoint(params::LMParameters, pmt::PMTModel, D, c
 
         d = C * t / ng  # photon path
 
-        ds = 2.0 / (n_coefficients + 1)
+        dcb = 2.0 / (n_coefficients + 1)
+        cb = -1.0 + 0.5*dcb
 
-        sb = 0.5ds
-        while sb < 1.0 - 0.25ds
+        for cb in (-1.0 + 0.5*dcb):dcb:1.0
 
-            for k in (-1, 1)
+            sb = sqrt((1.0 + cb) * (1.0 - cb))
 
-                cb = k * sqrt((1.0 + sb) * (1.0 - sb))
-                dcb = k * ds * sb / cb
+            v = 0.5 * (d + D) * (d - D) / (d - D * cb)
+            u = d - v
 
-                v = 0.5 * (d + D) * (d - D) / (d - D * cb)
-                u = d - v
+            u <= 0 && continue
+            v <= 0 && continue
 
-                if (u <= 0)
-                    continue
-                end
-                if (v <= 0)
-                    continue
-                end
+            cts = (D * cb - v) / u  # cosine scattering angle
 
-                cts = (D * cb - v) / u  # cosine scattering angle
+            V = exp(
+                -d * inverseattenuationlength(
+                    params.scattering_probability_model,
+                    l_abs,
+                    ls,
+                    cts,
+                ),
+            )
 
-                V = exp(
-                    -d * inverseattenuationlength(
-                        params.scattering_probability_model,
-                        l_abs,
-                        ls,
-                        cts,
-                    ),
-                )
+            if cts < 0.0 && v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius
 
-                cts < 0.0 &&
-                    v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius &&
-                    continue
-
-                W = min(A / (v * v), 2.0 * π)  # solid angle
-                Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
-                Jd = ng * (1.0 - cts) / C  # dt/du
-
-                dp = π / length(params.integration_points)
-                dom = dcb * dp * v * v / (u * u)
-
-                for (cp, sp) in params.integration_points.xy
-
-                    dot = cb * ct - sb * cp * st
-
-                    U = 2 * pmt.angular_acceptance(dot)  # PMT angular acceptance
-
-                    value += npe * geanc() * dom * U * V * W * Ja * Jb * Jc / abs(Jd)
-                end
+                # println("###################")
+                # println(" -> continue in k")
+                # println("###################")
+                continue
             end
-            sb += ds
+
+            W = min(A / (v * v), 2.0 * π)  # solid angle
+            Ja = scatteringprobability(params.scattering_probability_model, cts)  # d^2P/dcos/dϕ
+            Jd = ng * (1.0 - cts) / C  # dt/du
+
+            dp = π / length(params.integration_points)
+            dom = dcb * dp * v * v / (u * u)
+
+            # println("* * * * * *")
+            # @show dp
+            # @show cb
+            # @show dom
+            # @show ct
+            # @show sb
+            # @show st
+            for (cp, sp) in params.integration_points.xy
+                # println(" . . . . .")
+                # @show cp
+
+                dot = cb * ct + sb * cp * st
+                # @show dot
+
+                U = 2 * pmt.angular_acceptance(dot)  # PMT angular acceptance
+                # @show U
+
+                value += npe * geanc() * dom * U * V * W * Ja * Jb * Jc / abs(Jd)
+                # @show value
+            end
         end
     end
 
