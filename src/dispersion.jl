@@ -78,3 +78,36 @@ function wavelength(dp::BaileyDispersion, n, w, eps)
 
     v
 end
+
+
+"""
+
+Determine wavelength [nm] for a given index of refraction corresponding to the
+group velocity.
+
+# Arguments
+
+- `n`: index of refraction
+- `eps`: precision index of refraction
+
+"""
+function wavelength(params::LMParameters, n; eps=1.0e-10)
+
+    vmin = params.lambda_min;
+    vmax = params.lambda_max;
+
+    for _ in 0:999
+        v = 0.5 * (vmin + vmax);
+        y = refractionindexgroup(params.dispersion_model, v)
+
+        abs(y - n) < eps && return v
+
+        if (y < n)
+            vmax = v
+        else
+            vmin = v
+        end
+    end
+
+    return 0.5 * (vmin + vmax)
+end
