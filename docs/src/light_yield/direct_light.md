@@ -1,11 +1,14 @@
 # Direct Light
 
 Direct light arrives at the PMT via a straight-line path from the Cherenkov
-emission point without scattering.  All functions return the expected number
-of photo-electrons (npe) when called without a time argument, or the time PDF
-[npe/ns] when a time difference `Δt` is provided.
+emission point without scattering.  All functions accept an [`LMParameters`](@ref)
+and a [`PMTModel`](@ref), and return the expected number of photo-electrons
+(npe) when called without a time argument, or the time PDF [npe/ns] when a
+time difference `Δt` is provided.
 
 ## Muon
+
+See [`directlightfrommuon`](@ref) for the full function signature.
 
 ```@example direct_light
 using CairoMakie
@@ -36,7 +39,7 @@ The time PDF of direct muon light (npe per ns) as a function of the time
 residual `Δt`:
 
 ```@example direct_light
-Δts = range(-5, 30, 500)
+Δts = range(-2, 5, 500)
 
 fig2 = Figure(size = (650, 380))
 ax2 = Axis(fig2[1, 1],
@@ -54,12 +57,12 @@ fig2
 
 ## EM Shower
 
-The 5-parameter form takes the distance `D`, the cosine of the shower axis to
-PMT direction `cd`, the PMT orientation `(θ, ϕ)`, and the time offset `Δt`.
-The shower profile is normalised per GeV of shower energy.
+[`directlightfromEMshower`](@ref) takes the distance `D`, the cosine of the
+shower axis to PMT direction `cd`, the PMT orientation `(θ, ϕ)`, and the
+time offset `Δt`. The shower profile is normalised per GeV of shower energy.
 
 ```@example direct_light
-Δts3 = range(-5, 60, 600)
+Δts3 = range(-2, 5, 600)
 
 fig3 = Figure(size = (650, 380))
 ax3 = Axis(fig3[1, 1],
@@ -77,11 +80,12 @@ fig3
 
 ## Bright Point
 
-An isotropic bright point source (e.g. a bioluminescent flash or calibration
-LED) radiates uniformly in all directions.
+[`directlightfrombrightpoint`](@ref) computes direct light from an isotropic
+source (e.g. a bioluminescent flash or calibration LED) that radiates
+uniformly in all directions.
 
 ```@example direct_light
-Δts4 = range(-5, 40, 500)
+Δts4 = range(-2, 5, 500)
 
 fig4 = Figure(size = (650, 380))
 ax4 = Axis(fig4[1, 1],

@@ -1,7 +1,32 @@
+"""
+Abstract base type for scattering-length models.  Subtypes must implement
+`scatteringlength(::MyModel, λ)` returning the scattering length [m] for
+wavelength `λ` [nm].
+"""
 abstract type ScatteringModel end
+
+"""
+Abstract base type for angular scattering-probability models.  Subtypes must
+implement `scatteringprobability(::MyModel, cos_theta)` returning the
+probability density for a scattered photon with direction cosine `cos_theta`.
+"""
 abstract type ScatteringProbabilityModel end
 
+"""
+Kopelevich volume scattering model for deep-sea water.
+
+Separates contributions from pure sea water and small (<1 μm) and large
+(>1 μm) particulates. Reference: C.D. Mobley, *Light and Water*, ISBN
+0-12-502750-8, p. 119.
+"""
 struct Kopelevich <: ScatteringModel end
+
+"""
+p00075 angular scattering-probability model for deep-sea water.
+
+A mixture of 17% Rayleigh and 83% Henyey-Greenstein (g = 0.924) scattering,
+matching the KM3NeT/ANTARES p00075 parametrisation.
+"""
 struct Scatteringp00075 <: ScatteringProbabilityModel end
 
 """
@@ -34,6 +59,12 @@ function scatteringlength(::Kopelevich, λ)
     1.0 / (pure_sea + small_par + large_par)
 end
 
+"""
+    scatteringprobability(model, cos_theta)
+
+Probability density for a scattered photon with direction cosine `cos_theta`,
+evaluated using `model`.
+"""
 scatteringprobability(::Scatteringp00075, λ) = p00075(λ)
 
 

@@ -1,18 +1,18 @@
 # Combined Light
 
-The convenience functions `lightfrommuon`, `lightfromEMshower`, and
-`lightfrombrightpoint` sum the direct and scattered contributions (and, for
-muons, the delta-ray and track-integrated EM-shower contributions) into a
-single time PDF.
+The convenience functions [`lightfrommuon`](@ref), [`lightfromEMshower`](@ref),
+and [`lightfrombrightpoint`](@ref) sum the direct and scattered contributions
+(and, for muons, the delta-ray and track-integrated EM-shower contributions)
+into a single time PDF.
 
 ## Muon (direct + scattered + delta rays + EM showers)
 
-`lightfrommuon(params, pmt, E, R, θ, ϕ, Δt)` sums six contributions:
+[`lightfrommuon`](@ref)`(params, pmt, E, R, θ, ϕ, Δt)` sums six contributions:
 
-- direct light from the muon track
-- scattered light from the muon track
-- direct + scattered light from track-integrated EM showers (scaled by energy `E`)
-- direct + scattered light from delta rays (scaled by `deltarayenergyloss(E)`)
+- [`directlightfrommuon`](@ref) — direct light from the muon track
+- [`scatteredlightfrommuon`](@ref) — scattered light from the muon track
+- [`directlightfromEMshowers`](@ref) + [`scatteredlightfromEMshowers`](@ref) — track-integrated EM shower light (scaled by energy `E`)
+- [`directlightfromdeltarays`](@ref) + [`scatteredlightfromdeltarays`](@ref) — delta-ray light (scaled by [`deltarayenergyloss`](@ref)`(E)`)
 
 ```@example combined_light
 using CairoMakie
@@ -21,7 +21,7 @@ using LumenManufaktur
 params = LMParameters(dispersion_model = DispersionORCA)
 pmt    = LumenManufaktur.KM3NeTPMT
 
-Δts = range(-5, 200, 1000)
+Δts = range(-5, 50, 500)
 E   = 100.0   # muon energy [GeV]
 R   = 10.0    # closest-approach distance [m]
 
@@ -45,12 +45,12 @@ fig
 
 ## EM Shower
 
-`lightfromEMshower` is available in two forms:
+[`lightfromEMshower`](@ref) is available in two forms:
 - 5-parameter: returns `d²P/dt/dE` [npe/ns/GeV], independent of shower energy
 - 6-parameter: includes shower energy `E` [GeV] and returns `dP/dt` [npe/ns]
 
 ```@example combined_light
-Δts2 = range(-5, 100, 800)
+Δts2 = range(-5, 50, 500)
 
 fig2 = Figure(size = (700, 400))
 ax2 = Axis(fig2[1, 1],
@@ -69,11 +69,12 @@ fig2
 
 ## Bright Point
 
-`lightfrombrightpoint(params, pmt, D, ct, Δt)` combines direct and scattered
-light from an isotropic point source at distance `D`.
+[`lightfrombrightpoint`](@ref)`(params, pmt, D, ct, Δt)` combines
+[`directlightfrombrightpoint`](@ref) and [`scatteredlightfrombrightpoint`](@ref)
+for an isotropic point source at distance `D`.
 
 ```@example combined_light
-Δts3 = range(-5, 150, 800)
+Δts3 = range(-5, 50, 500)
 
 fig3 = Figure(size = (700, 400))
 ax3 = Axis(fig3[1, 1],

@@ -1,3 +1,10 @@
+"""
+    PDFIntegrationPoints(n)
+
+Gauss-Legendre-like angular integration nodes used inside the PDF integrals.
+`n` is the number of points; higher values give more accurate results at the
+cost of computation time. The default used by `LMParameters` is `n = 20`.
+"""
 struct PDFIntegrationPoints
     xy::Vector{Tuple{Float64,Float64}}
     function PDFIntegrationPoints(n::Int)

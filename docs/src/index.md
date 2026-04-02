@@ -22,12 +22,12 @@ with a drop-in custom implementation without touching the core code.
 
 | Component | Abstract type | Built-in defaults |
 |---|---|---|
-| Dispersion | `DispersionModel` | `BaileyDispersion`, `DispersionORCA`, `DispersionARCA` |
-| Scattering length | `ScatteringModel` | `Kopelevich` |
-| Scattering probability | `ScatteringProbabilityModel` | `Scatteringp00075` |
-| Absorption | `AbsorptionModel` | `DefaultAbsorption` |
+| Dispersion | [`DispersionModel`](@ref) | [`BaileyDispersion`](@ref), [`DispersionORCA`](@ref), [`DispersionARCA`](@ref) |
+| Scattering length | [`ScatteringModel`](@ref) | [`Kopelevich`](@ref) |
+| Scattering probability | [`ScatteringProbabilityModel`](@ref) | [`Scatteringp00075`](@ref) |
+| Absorption | [`AbsorptionModel`](@ref) | [`DefaultAbsorption`](@ref) |
 
-All models are passed through the central `LMParameters` struct.  Swapping one
+All models are passed through the central [`LMParameters`](@ref) struct.  Swapping one
 is a one-liner:
 
 ```@example modularity
@@ -51,9 +51,9 @@ params_flat = LMParameters(
 directlightfrommuon(params_flat, LumenManufaktur.KM3NeTPMT, 10.0, π/2, π/2)
 ```
 
-The PMT is equally flexible: `PMTModel` accepts any callable for the quantum
-efficiency and angular acceptance, so detector-specific response curves can be
-injected directly without modifying library code.
+The PMT is equally flexible: [`PMTModel`](@ref) accepts any callable for the
+quantum efficiency and angular acceptance, so detector-specific response curves
+can be injected directly without modifying library code.
 
 ## Installation
 

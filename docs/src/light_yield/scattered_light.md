@@ -3,14 +3,15 @@
 Scattered light arrives at the PMT after one or more scattering interactions
 in the water. Because of the additional path length, scattered photons arrive
 later than direct photons, forming a broad tail in the time PDF. All functions
-return the time PDF [npe/ns] (or [npe/ns/GeV] for shower functions normalised
-per unit energy).
+accept an [`LMParameters`](@ref) and a [`PMTModel`](@ref), and return the
+time PDF [npe/ns] (or [npe/ns/GeV] for shower functions normalised per unit
+energy).
 
 ## Muon
 
-The 5-parameter form takes the closest-approach distance `D`, the cosine of
-the track direction `cd`, the PMT orientation `(θ, ϕ)`, and the time offset
-`Δt`.
+[`scatteredlightfrommuon`](@ref) takes the closest-approach distance `D`, the
+cosine of the track direction `cd`, the PMT orientation `(θ, ϕ)`, and the
+time offset `Δt`.
 
 ```@example scattered_light
 using CairoMakie
@@ -37,6 +38,8 @@ fig
 
 ## EM Shower
 
+See [`scatteredlightfromEMshower`](@ref) for the full function signature.
+
 ```@example scattered_light
 Δts2 = range(-5, 200, 1000)
 
@@ -55,6 +58,8 @@ fig2
 ```
 
 ## Bright Point
+
+See [`scatteredlightfrombrightpoint`](@ref) for the full function signature.
 
 ```@example scattered_light
 Δts3 = range(-5, 200, 1000)

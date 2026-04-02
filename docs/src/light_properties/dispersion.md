@@ -3,17 +3,17 @@
 The refractive index of deep-sea water varies with wavelength (dispersion),
 which directly determines both the Cherenkov angle and the photon travel time
 used in timing PDFs.  The dispersion model is pluggable via the
-`dispersion_model` field of `LMParameters`.
+`dispersion_model` field of [`LMParameters`](@ref).
 
 ## Built-in models
 
-`LumenManufaktur.jl` ships the **Bailey dispersion model**, parameterised by
-ambient pressure (atm), with two pre-defined instances for the KM3NeT sites:
+`LumenManufaktur.jl` ships the [`BaileyDispersion`](@ref) model, parameterised
+by ambient pressure (atm), with two pre-defined instances for the KM3NeT sites:
 
 | Constant | Pressure | Depth |
 |---|---|---|
-| `DispersionORCA` | 240 atm | ~2450 m (KM3NeT/ORCA) |
-| `DispersionARCA` | 350 atm | ~3500 m (KM3NeT/ARCA) |
+| [`DispersionORCA`](@ref) | 240 atm | ~2450 m (KM3NeT/ORCA) |
+| [`DispersionARCA`](@ref) | 350 atm | ~3500 m (KM3NeT/ARCA) |
 
 ```@example dispersion
 using CairoMakie
@@ -43,15 +43,17 @@ axislegend(ax_ph; position = :rt)
 fig
 ```
 
-The phase index determines the Cherenkov angle; the group index governs photon
-travel time and hence the timing PDFs used in track reconstruction. Higher
-pressure at depth slightly increases both indices compared to surface water.
+The [`refractionindexphase`](@ref) determines the Cherenkov angle; the
+[`refractionindexgroup`](@ref) governs photon travel time and hence the timing
+PDFs used in track reconstruction. Higher pressure at depth slightly increases
+both indices compared to surface water.
 
 ## Custom dispersion models
 
-Any subtype of `DispersionModel` with the appropriate methods can be used.
-The minimum interface is `refractionindexphase` and `refractionindexgroup`.
-For example, a simple constant-index model:
+Any subtype of [`DispersionModel`](@ref) that implements
+[`refractionindexphase`](@ref) and [`refractionindexgroup`](@ref) can be
+passed to [`LMParameters`](@ref) as a drop-in replacement.  For example, a
+simple constant-index model:
 
 ```@example dispersion
 struct ConstantDispersion <: DispersionModel

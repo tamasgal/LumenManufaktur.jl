@@ -1,19 +1,19 @@
 # Scattering
 
 Scattering in the medium is governed by two independent, swappable components
-in `LMParameters`:
+in [`LMParameters`](@ref):
 
 | Parameter | Abstract type | Purpose |
 |---|---|---|
-| `scattering_model` | `ScatteringModel` | Mean free path between scattering events |
-| `scattering_probability_model` | `ScatteringProbabilityModel` | Angular distribution after a scatter |
+| `scattering_model` | [`ScatteringModel`](@ref) | Mean free path between scattering events |
+| `scattering_probability_model` | [`ScatteringProbabilityModel`](@ref) | Angular distribution after a scatter |
 
 ## Scattering length
 
 The scattering length is the mean free path between interactions.  The
-built-in `Kopelevich` model separates contributions from pure sea water and
-from small (<1 μm) and large (>1 μm) particulates, following the spectral
-volume scattering functions of Mobley (1994).
+built-in [`Kopelevich`](@ref) model separates contributions from pure sea
+water and from small (<1 μm) and large (>1 μm) particulates, following the
+spectral volume scattering functions of Mobley (1994).
 
 ```@example scattering
 using CairoMakie
@@ -35,8 +35,8 @@ axislegend(ax; position = :rt)
 fig
 ```
 
-A custom scattering model only needs to subtype `ScatteringModel` and
-implement `scatteringlength`:
+A custom scattering model only needs to subtype [`ScatteringModel`](@ref) and
+implement [`scatteringlength`](@ref):
 
 ```@example scattering
 # Power-law scattering as a minimal custom example
@@ -61,8 +61,8 @@ fig2
 ## Scattering probability
 
 The scattering probability model describes the angular distribution of a
-scattered photon. The built-in `Scatteringp00075` model is a mixture of
-Rayleigh (17%) and Henyey-Greenstein (83%, *g* = 0.924):
+scattered photon. The built-in [`Scatteringp00075`](@ref) model is a mixture
+of [`rayleigh`](@ref) (17%) and [`henyey_greenstein`](@ref) (83%, *g* = 0.924):
 
 ```@example scattering
 xs  = range(-1, 1, 1000)
@@ -82,5 +82,5 @@ fig3
 
 The strong forward peak means most scattered photons deviate only slightly
 from their original direction. A custom probability model follows the same
-pattern — subtype `ScatteringProbabilityModel` and implement
-`scatteringprobability(::MyModel, cos_theta)`.
+pattern — subtype [`ScatteringProbabilityModel`](@ref) and implement
+[`scatteringprobability`](@ref)`(::MyModel, cos_theta)`.

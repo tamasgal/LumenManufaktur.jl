@@ -1,5 +1,14 @@
+"""
+Abstract base type for absorption models.  Subtypes must implement
+`absorptionlength(::MyModel, λ)` returning the absorption length [m] for
+wavelength `λ` [nm].
+"""
 abstract type AbsorptionModel end
 
+"""
+Default tabulated absorption model for deep-sea water.
+Values are interpolated from the Jpp framework (M. de Jong) over 290–715 nm.
+"""
 struct DefaultAbsorption <: AbsorptionModel end
 
 

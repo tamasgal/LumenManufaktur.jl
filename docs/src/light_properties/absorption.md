@@ -7,9 +7,9 @@ wavelength.
 
 ## Default model
 
-The built-in `DefaultAbsorption` model uses tabulated values from the Jpp
-framework, interpolated over 290–715 nm.  It is the default when constructing
-`LMParameters()` without an explicit `absorption_model`.
+The built-in [`DefaultAbsorption`](@ref) model uses tabulated values from the
+Jpp framework, interpolated over 290–715 nm.  It is the default when
+constructing [`LMParameters`](@ref) without an explicit `absorption_model`.
 
 ```@example absorption
 using CairoMakie
@@ -35,9 +35,10 @@ length exceeding 60 m. Beyond ~700 nm the medium becomes essentially opaque.
 
 ## Custom absorption models
 
-Any struct that subtypes `AbsorptionModel` and implements `absorptionlength`
-can be passed to `LMParameters` as a drop-in replacement.  For example, a
-simple Gaussian-shaped transparency window:
+Any struct that subtypes [`AbsorptionModel`](@ref) and implements
+[`absorptionlength`](@ref) can be passed to [`LMParameters`](@ref) as a
+drop-in replacement.  For example, a simple Gaussian-shaped transparency
+window:
 
 ```@example absorption
 struct GaussianAbsorption <: AbsorptionModel
