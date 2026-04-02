@@ -243,11 +243,11 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
     if (C * t < n0 * D)
         root = Root(R, n0, t + Z / C)  # square root
         !root.isvalid && return value
-        if root.most_upstream > Z
-            zmin = root.most_upstream - Z
-        end
         if root.most_downstream > Z
             zmin = root.most_downstream - Z
+        end
+        if root.most_upstream > Z
+            zmin = root.most_upstream - Z
         end
     end
 
@@ -256,11 +256,11 @@ function directlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, cd, 
 
         !root.isvalid && return value
 
-        if (root.most_upstream > Z)
-            zmin = root.most_upstream - Z
-        end
         if (root.most_downstream > Z)
             zmin = root.most_downstream - Z
+        end
+        if (root.most_upstream > Z)
+            zmin = root.most_upstream - Z
         end
     end
 
@@ -344,11 +344,11 @@ function scatteredlightfromEMshower(params::LMParameters, pmt::PMTModel, E, D, c
 
         !root.isvalid && return value
 
-        if (root.most_upstream > Z)
-            zmin = root.most_upstream - Z
-        end
         if (root.most_downstream > Z)
             zmin = root.most_downstream - Z
+        end
+        if (root.most_upstream > Z)
+            zmin = root.most_upstream - Z
         end
     end
 
@@ -461,7 +461,7 @@ function directlightfromEMshowers(params::LMParameters, pmt::PMTModel, R, θ, ϕ
             Jd = (1.0 - ng * ct0) / C  # d  t/ dz
             Je = ng * st0 * st0 * st0 / (R * C)  # d^2t/(dz)^2
 
-            value += npe * geanc() * U * V * W * Ja / (abs(Jd) + 0.5 * Je * dz)
+            value += npe * gwater() * U * V * W * Ja / (abs(Jd) + 0.5 * Je * dz)
         end
 
     end
@@ -611,7 +611,7 @@ function scatteredlightfromEMshowers(params::LMParameters, pmt::PMTModel, R, θ,
                         Jb = geant(n, ct0)  # d^2N/dcos/dϕ
 
                         value +=
-                            dom * npe * geanc() * dz * U * V * W * Ja * Jb * Jc / abs(Jd)
+                            dom * npe * gwater() * dz * U * V * W * Ja * Jb * Jc / abs(Jd)
                     end
                 end
                 sb += ds

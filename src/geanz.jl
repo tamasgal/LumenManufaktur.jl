@@ -7,7 +7,7 @@ const _LGAMMA_COEFF = (
     -1.231739572450155, 1.208650973866179e-3, -5.395239384953e-6,
 )
 
-function _lgamma(xx::Float64)::Float64
+function _lgamma(xx::AbstractFloat)
     x = xx
     y = xx
     tmp = x + 5.5
@@ -29,7 +29,7 @@ end
 #
 # Reference: Numerical Recipes in C++, W.H. Press, S.A. Teukolsky, W.T. Vetterling
 #            and B.P. Flannery, Cambridge University Press.
-function _gammainc(a::Float64, x::Float64)::Float64
+function _gammainc(a::AbstractFloat, x::AbstractFloat)
     x == 0.0 && return 0.0
     gln = _lgamma(a)
     if x < a + 1.0
@@ -40,11 +40,11 @@ function _gammainc(a::Float64, x::Float64)::Float64
             ap  += 1.0
             del *= x / ap
             s   += del
-            abs(del) < abs(s) * eps(Float64) && return s * exp(-x + a * log(x) - gln)
+            abs(del) < abs(s) * eps(typeof(x)) && return s * exp(-x + a * log(x) - gln)
         end
         error("_gammainc series did not converge for a=$a, x=$x")
     else
-        FPMIN = floatmin(Float64) / eps(Float64)
+        FPMIN = floatmin(typeof(x)) / eps(typeof(x))
         b = x + 1.0 - a
         c = 1.0 / FPMIN
         d = 1.0 / b
@@ -59,7 +59,7 @@ function _gammainc(a::Float64, x::Float64)::Float64
             d   = 1.0 / d
             del = d * c
             h  *= del
-            abs(del - 1.0) < eps(Float64) && return 1.0 - exp(-x + a * log(x) - gln) * h
+            abs(del - 1.0) < eps(typeof(x)) && return 1.0 - exp(-x + a * log(x) - gln) * h
         end
         error("_gammainc continued fraction did not converge for a=$a, x=$x")
     end

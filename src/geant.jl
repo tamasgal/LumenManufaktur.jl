@@ -13,7 +13,7 @@ const _GEANX_B = -5.40
 # lower incomplete gamma: ∫ exp(−t) × (1/a)(1/(−b))^(1/a) t^(1/a−1) dt = (1/a)(1/(−b))^(1/a) γ(1/a, t).
 # Splitting at the Cherenkov cone ct = 1/n and applying sign conventions for the two
 # half-integrals follows the implementation in JGeanx::evaluate (Jpp/JPhysics/JGeanx.hh).
-function _geanx_integral(n::Float64, xmin::Float64, xmax::Float64)::Float64
+function _geanx_integral(n::AbstractFloat, xmin::AbstractFloat, xmax::AbstractFloat)
     x  = 1.0 / n
     ai = 1.0 / _GEANX_A
 
@@ -42,7 +42,7 @@ Parametrisation: c × exp(b × |ct − 1/n|^a), normalised so 2π ∫₋₁¹ P 
 Reference: R. Mirani, "Parametrisation of EM-showers in the ANTARES detector volume",
            Doctoral thesis, University of Amsterdam.
 """
-function geant(n::Float64, ct::Float64)::Float64
+function geant(n::AbstractFloat, ct::AbstractFloat)
     norm = _geanx_integral(n, -1.0, 1.0)
     c = 1.0 / (2π * norm)
     return c * exp(_GEANX_B * abs(ct - 1.0 / n)^_GEANX_A)
@@ -55,7 +55,7 @@ end
 Integral of the EM-shower photon emission profile over cos θ ∈ [ct_min, ct_max] (= dN/dφ).
 Used to integrate over a small angular bin in scattered light calculations.
 """
-function geant(n::Float64, ct_min::Float64, ct_max::Float64)::Float64
+function geant(n::AbstractFloat, ct_min::AbstractFloat, ct_max::AbstractFloat)
     norm = _geanx_integral(n, -1.0, 1.0)
     c = 1.0 / (2π * norm)
     return c * _geanx_integral(n, ct_min, ct_max)

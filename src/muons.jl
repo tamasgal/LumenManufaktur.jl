@@ -26,6 +26,20 @@ See ANTARES internal note ANTARES-SOFT-2002-015, J. Brunner.
 
 
 """
+    gwater()
+
+Equivalent unit track length per unit shower energy and per unit muon track length [GeV⁻¹].
+
+Computed as `getB() * geanc()` where `getB() = 3.40e-4 * DENSITY_SEA_WATER` [m⁻¹]
+is the medium-energy radiative energy-loss constant for water (pair production and
+bremsstrahlung), and `DENSITY_SEA_WATER = 1.038 g/cm³`.
+
+See Jpp `JGeane.hh` / `JGeaneWater`.
+"""
+@inline gwater() = 3.40e-4 * 1.038 * geanc()  # [GeV^-1]
+
+
+"""
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
