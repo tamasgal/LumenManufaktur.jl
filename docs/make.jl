@@ -13,6 +13,16 @@ makedocs(;
     warnonly = [:missing_docs],
     pages = [
         "Home" => "index.md",
+        "Light Properties" => Any[
+            "light_properties/absorption.md",
+            "light_properties/scattering.md",
+            "light_properties/dispersion.md",
+        ],
+        "Light Yield" => Any[
+            "light_yield/direct_light.md",
+            "light_yield/scattered_light.md",
+            "light_yield/combined_light.md",
+        ],
         "Examples" => Any[
             "examples/directlightfrommuon.md",
             "examples/npes_and_zenith_angles.md",
