@@ -52,7 +52,7 @@ end
 """
     geant(n, ct_min, ct_max)
 
-Integral of the EM-shower photon emission profile over cos θ ∈ [ct_min, ct_max] (= dN/dφ).
+Integral of the EM-shower photon emission profile over cos θ ∈ \[ct\_min, ct\_max\] (= dN/dφ).
 Used to integrate over a small angular bin in scattered light calculations.
 """
 function geant(n::AbstractFloat, ct_min::AbstractFloat, ct_max::AbstractFloat)
