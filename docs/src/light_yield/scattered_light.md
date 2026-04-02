@@ -4,7 +4,7 @@ Scattered light arrives at the PMT after one or more scattering interactions
 in the water. Because of the additional path length, scattered photons arrive
 later than direct photons, forming a broad tail in the time PDF. All functions
 accept an [`LMParameters`](@ref) and a [`PMTModel`](@ref), and return the
-time PDF [npe/ns] (or [npe/ns/GeV] for shower functions normalised per unit
+time PDF \[npe/ns\] (or \[npe/ns/GeV\] for shower functions normalised per unit
 energy).
 
 ## Muon
