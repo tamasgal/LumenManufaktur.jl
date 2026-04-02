@@ -777,19 +777,13 @@ end
 """
     lightfrommuon(params, pmt, E, R, θ, ϕ, Δt)
 
-Total light yield from a muon of energy `E` [GeV]: sum of direct muon light,
-direct and scattered EM-shower light, and direct and scattered delta-ray light.
-Returns dP/dt [npe/ns].
-
-!!! note
-    Scattered muon track light is not included: it requires an R-based
-    implementation (`scatteredlightfrommuon(R, θ, ϕ, Δt)`) that has not yet
-    been implemented. The existing `scatteredlightfrommuon` is the per-segment
-    (D, cd) variant (d²P/dt/dx).
+Total light yield from a muon of energy `E` [GeV]: sum of direct and scattered
+contributions from the muon track, EM showers, and delta rays. Returns dP/dt [npe/ns].
 """
 function lightfrommuon(params::LMParameters, pmt::PMTModel, E, R, θ, ϕ, Δt)
     dE = deltarayenergyloss(E)
     return (directlightfrommuon(params, pmt, R, θ, ϕ, Δt)             +
+            scatteredlightfrommuon(params, pmt, R, θ, ϕ, Δt)          +
             directlightfromEMshowers(params, pmt, R, θ, ϕ, Δt)    * E  +
             scatteredlightfromEMshowers(params, pmt, R, θ, ϕ, Δt) * E  +
             directlightfromdeltarays(params, pmt, R, θ, ϕ, Δt)    * dE +
