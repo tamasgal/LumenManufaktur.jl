@@ -23,6 +23,11 @@ makedocs(;
             "light_yield/scattered_light.md",
             "light_yield/combined_light.md",
         ],
+        "PDF Tables" => Any[
+            "pdf_tables/overview.md",
+            "pdf_tables/muon_table.md",
+            "pdf_tables/shower_brightpoint_tables.md",
+        ],
         "Examples" => Any[
             "examples/directlightfrommuon.md",
             "examples/npes_and_zenith_angles.md",

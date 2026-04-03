@@ -11,6 +11,31 @@ PDFIntegrationPoints
 PMTModel
 ```
 
+## PDF Tables
+
+```@docs
+PDFTableConfig
+DirectMuonPDFTable
+makepdf
+save_pdftable
+load_pdftable
+MuonPDFTableConfig
+MuonPDFTable
+makemuonpdf
+save_muonpdftable
+load_muonpdftable
+EMShowerPDFTableConfig
+EMShowerPDFTable
+makeemshowerpdf
+save_emshowerpdftable
+load_emshowerpdftable
+BrightPointPDFTableConfig
+BrightPointPDFTable
+makebrightpointpdf
+save_brightpointpdftable
+load_brightpointpdftable
+```
+
 ## Muon light
 
 ```@docs

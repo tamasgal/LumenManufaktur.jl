@@ -2,6 +2,7 @@ module LumenManufaktur
 
 using BasicInterpolators
 using FastGaussQuadrature
+using HDF5
 
 const C = 0.299792458  # Speed of light in vacuum [m/ns]
 const α = 1.0 / 137.036  # Fine-structure constant
@@ -18,6 +19,7 @@ include("geant.jl")
 include("muons.jl")
 include("deltarays.jl")
 include("showers.jl")
+include("pdftable.jl")
 include("exports.jl")
 
 end
