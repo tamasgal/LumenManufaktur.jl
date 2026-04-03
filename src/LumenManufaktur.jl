@@ -13,8 +13,11 @@ include("absorption.jl")
 include("pmt.jl")
 include("parameters.jl")
 include("utils.jl")
+include("geanz.jl")
+include("geant.jl")
 include("muons.jl")
 include("deltarays.jl")
+include("showers.jl")
 include("exports.jl")
 
 end

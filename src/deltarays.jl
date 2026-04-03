@@ -266,3 +266,52 @@ function scatteredlightfromdeltarays(params::LMParameters, pmt::PMTModel, R, θ,
 
     value
 end
+
+
+# Physical constants for delta-ray Bethe-Bloch energy loss (from JDeltaRays.hh in Jpp).
+const _DR_K         = 0.307075        # Bethe-Bloch constant [MeV mol^-1 cm^2]
+const _DR_MASS_MUON = 0.1056583745    # muon mass [GeV]
+const _DR_MASS_E    = 0.510998946e-3  # electron mass [GeV]
+const _DR_TMIN      = 0.000915499     # minimum delta-ray kinetic energy [GeV]
+const _DR_DENSITY   = 1.038           # sea water density [g/cm³]
+# Effective Z/A for sea water (H, O, Na, Cl; no RADIATION flag)
+const _DR_Z_OVER_A  = 1.0/1.0*0.10870 + 8.0/16.0*0.85890 + 11.0/23.0*0.01180 + 17.0/35.5*0.02060
+
+
+"""
+    deltarayenergyloss(E)
+
+Equivalent EM-shower energy loss due to delta-rays per unit muon track length in sea water [GeV/m].
+
+Uses the Bethe-Bloch formula with form factor F(T) = T²/(2E²) − β²/Tmax + 1.
+
+Reference: M. de Jong, JDeltaRays.hh (Jpp).
+"""
+function deltarayenergyloss(E)
+    M  = _DR_MASS_MUON
+    me = _DR_MASS_E
+
+    gamma = E / M
+    gamma <= 1.0 && return 0.0
+
+    beta2 = (gamma + 1.0) * (gamma - 1.0) / (gamma * gamma)
+
+    # Maximum kinetic energy transferable to a delta-ray
+    ratio = me / M
+    Tmax  = (2.0 * me * beta2 * gamma^2) / (1.0 + 2.0 * gamma * ratio + ratio^2)
+    Tmax  = min(Tmax, 1.0e10)
+    Tmin  = _DR_TMIN
+
+    Tmin >= Tmax && return 0.0
+
+    # Bethe-Bloch prefactor [MeV g^-1 cm^2]
+    W = 0.5 * _DR_K / beta2
+
+    a  = 0.25 / (E * E)
+    b  = beta2 / Tmax
+    sT = Tmax + Tmin
+    dT = Tmax - Tmin
+
+    # [GeV g^-1 cm^2] × Z/A × density [g/cm^3] × 100 [cm/m] = [GeV/m]
+    return W * (a * sT * dT - b * dT + log(Tmax / Tmin)) * 1.0e-3 * _DR_Z_OVER_A * _DR_DENSITY * 100.0
+end

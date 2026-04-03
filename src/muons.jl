@@ -26,6 +26,20 @@ See ANTARES internal note ANTARES-SOFT-2002-015, J. Brunner.
 
 
 """
+    gwater()
+
+Equivalent unit track length per unit shower energy and per unit muon track length [GeV⁻¹].
+
+Computed as `getB() * geanc()` where `getB() = 3.40e-4 * DENSITY_SEA_WATER` [m⁻¹]
+is the medium-energy radiative energy-loss constant for water (pair production and
+bremsstrahlung), and `DENSITY_SEA_WATER = 1.038 g/cm³`.
+
+See Jpp `JGeane.hh` / `JGeaneWater`.
+"""
+@inline gwater() = 3.40e-4 * 1.038 * geanc()  # [GeV^-1]
+
+
+"""
     directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ)
 
 Returns the number of photo-electrons from direct Cherenkov light from a muon
@@ -167,6 +181,157 @@ function directlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt
 
     0.0
 end
+
+"""
+    scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
+
+Probability density function for scattered light from a muon track. Returns dP/dt [npe/ns].
+
+Integrates over all possible photon emission positions along the muon track using
+absorption-weighted Gauss-Legendre quadrature, then over azimuth angle with a
+log-transformed quadrature. Mirrors `getScatteredLightFromMuon(R_m, theta, phi, t_ns)`
+in Jpp's first JPDF class.
+
+# Arguments
+- `params`: parameters of the setup
+- `pmt`: PMT model
+- `R`: closest distance of approach of muon to PMT [m]
+- `θ`: zenith  angle orientation PMT [rad]
+- `ϕ`: azimuth angle orientation PMT [rad]
+- `Δt`: time difference relative to direct Cherenkov light [ns]
+"""
+function scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, R, θ, ϕ, Δt)
+    eps = 1.0e-10
+
+    value = 0.0
+
+    R = max(R, params.minimum_distance)
+    A = pmt.photocathode_area
+    t = R * tanthetac(params.n) / C + Δt  # time [ns]
+
+    px = sin(θ) * cos(ϕ)
+    py = sin(θ) * sin(ϕ)
+    pz = cos(θ)
+
+    n0 = refractionindexgroup(params.dispersion_model, params.lambda_max)
+    n1 = refractionindexgroup(params.dispersion_model, params.lambda_min)
+    ni = sqrt(R * R + C * t * C * t) / R  # maximal index of refraction
+
+    n0 >= ni && return value
+
+    nj = min(ni, n1)
+
+    w = params.lambda_max
+
+    for (m_x, m_y) in zip(params.legendre_coefficients...)
+
+        ng = 0.5 * (nj + n0) + m_x * 0.5 * (nj - n0)
+        dn = m_y * 0.5 * (nj - n0)
+
+        w = wavelength(params.dispersion_model, ng, w, 1.0e-5)
+
+        dw = dn / abs(dispersiongroup(params.dispersion_model, w))
+
+        n = refractionindexphase(params.dispersion_model, w)
+
+        l_abs = absorptionlength(params.absorption_model, w)
+        ls = scatteringlength(params.scattering_model, w)
+
+        npe = cherenkov(w, n) * dw * pmt.quantum_efficiency(w)
+
+        npe <= 0 && continue
+
+        Jc = 1.0 / ls  # dN/dx
+
+        ct0 = 1.0 / n  # photon direction before scattering (Cherenkov cone)
+        st0 = sqrt((1.0 + ct0) * (1.0 - ct0))
+
+        root = Root(R, ng, t)
+
+        !root.isvalid && continue
+
+        zap = 1.0 / l_abs
+
+        xmin = exp(zap * root.most_downstream)
+        xmax = exp(zap * root.most_upstream)
+
+        for (p_x, p_y) in zip(params.legendre_coefficients...)
+
+            x = 0.5 * (xmax + xmin) + p_x * 0.5 * (xmax - xmin)
+            dx = p_y * 0.5 * (xmax - xmin)
+
+            z = log(x) / zap
+            dz = -dx / (zap * x)
+
+            D = sqrt(z * z + R * R)
+            cd = -z / D
+            sd = R / D
+
+            d = (C * t - z) / ng  # photon path length
+
+            cta = cd * ct0 + sd * st0
+            dca = d - 0.5 * (d + D) * (d - D) / (d - D * cta)
+            tip = -log(D * D / (dca * dca) + eps) / π
+
+            ymin = exp(tip * π)
+            ymax = 1.0
+
+            for (q_x, q_y) in zip(params.legendre_coefficients...)
+
+                y = 0.5 * (ymax + ymin) + q_x * 0.5 * (ymax - ymin)
+                dy = q_y * 0.5 * (ymax - ymin)
+
+                ϕ0 = log(y) / tip
+                dp = -dy / (tip * y)
+
+                cp0 = cos(ϕ0)
+                sp0 = sin(ϕ0)
+
+                u = (R * R + z * z - d * d) / (2 * R * st0 * cp0 - 2 * z * ct0 - 2 * d)
+                v = d - u
+
+                u <= 0 && continue
+                v <= 0 && continue
+
+                vi = 1.0 / v
+                cts = (R * st0 * cp0 - z * ct0 - u) * vi  # cosine scattering angle
+
+                V = exp(
+                    -d * inverseattenuationlength(
+                        params.scattering_probability_model,
+                        l_abs,
+                        ls,
+                        cts,
+                    ),
+                )
+
+                cts < 0.0 &&
+                    v * sqrt((1.0 + cts) * (1.0 - cts)) < params.module_radius &&
+                    continue
+
+                vx = R - u * st0 * cp0
+                vy = -u * st0 * sp0
+                vz = -z - u * ct0
+
+                ct = (
+                    (vx * px + vy * py + vz * pz) * vi,
+                    (vx * px - vy * py + vz * pz) * vi,
+                )
+
+                U = pmt.angular_acceptance(ct[1]) + pmt.angular_acceptance(ct[2])
+                W = min(A * vi * vi, 2π)
+
+                Ja = scatteringprobability(params.scattering_probability_model, cts)
+                Jd = ng * (1.0 - cts) / C
+
+                value += (npe * dz * dp / (2π)) * U * V * W * Ja * Jc / abs(Jd)
+            end
+        end
+    end
+
+    return value
+end
+
 
 """
     scatteredlightfrommuon(params::LMParameters, pmt::PMTModel, D, cd, θ, ϕ, Δt)

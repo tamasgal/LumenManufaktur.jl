@@ -1,3 +1,10 @@
+"""
+    PDFIntegrationPoints(n)
+
+Gauss-Legendre-like angular integration nodes used inside the PDF integrals.
+`n` is the number of points; higher values give more accurate results at the
+cost of computation time. The default used by `LMParameters` is `n = 20`.
+"""
 struct PDFIntegrationPoints
     xy::Vector{Tuple{Float64,Float64}}
     function PDFIntegrationPoints(n::Int)
@@ -28,7 +35,7 @@ Base.@kwdef struct LMParameters{
     A<:AbsorptionModel,
 }
     minimum_distance::Float64 = 1.0e-1
-    module_radius::Float64 = 0.25
+    module_radius::Float64 = 0.216
     lambda_min::Float64 = 300.0
     lambda_max::Float64 = 700.0
     integration_points::PDFIntegrationPoints = PDFIntegrationPoints(20)

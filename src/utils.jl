@@ -36,6 +36,8 @@ struct Root
 
         q = b * b - 4 * a * c
 
+        first = 0.0
+        second = 0.0
         isvalid = false
         if q >= 0.0
 
