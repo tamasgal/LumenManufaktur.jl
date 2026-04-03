@@ -1,3 +1,8 @@
+"""
+Abstract base type for dispersion models.  Subtypes must implement at minimum
+`refractionindexphase(::MyModel, λ)` and `refractionindexgroup(::MyModel, λ)`,
+each returning the respective refractive index for wavelength `λ` [nm].
+"""
 abstract type DispersionModel end
 
 
@@ -22,15 +27,30 @@ Base.@kwdef struct BaileyDispersion <: DispersionModel
 end
 
 BaileyDispersion(P) = BaileyDispersion(P = P)
+
+"Bailey dispersion model at 240 atm, corresponding to KM3NeT/ORCA depth (~2450 m)."
 const DispersionORCA = BaileyDispersion(240)
+
+"Bailey dispersion model at 350 atm, corresponding to KM3NeT/ARCA depth (~3500 m)."
 const DispersionARCA = BaileyDispersion(350)
 
 
+"""
+    refractionindexphase(model, λ)
+
+Phase refractive index of the medium for wavelength `λ` [nm].
+"""
 @inline function refractionindexphase(dp::BaileyDispersion, λ)
     x = 1.0 / λ
     dp.a0 + dp.a1 * dp.P + x * (dp.a2 + x * (dp.a3 + x * dp.a4))
 end
 
+"""
+    refractionindexgroup(model, λ)
+
+Group refractive index of the medium for wavelength `λ` [nm].
+Governs photon travel time and hence the timing PDFs.
+"""
 @inline function refractionindexgroup(dp::BaileyDispersion, λ)
     n = refractionindexphase(dp, λ)
     y = dispersionphase(dp, λ)
