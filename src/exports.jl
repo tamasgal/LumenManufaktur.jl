@@ -16,6 +16,8 @@ export
     LMParameters,
     PDFIntegrationPoints,
     PMTModel,
+    KM3NeTPMT,
+    KM3NeTPMT_Jpp,
     absorptionlength,
     AbsorptionModel,
     DefaultAbsorption,
